@@ -11,6 +11,10 @@ type LinkedList[T comparable] struct {
 	Value T
 }
 
+func Insert[T comparable](l *LinkedList[T], x T) *LinkedList[T] {
+	return &LinkedList[T]{l, x}
+}
+
 func LinkedListFromSlice[T comparable](s []T) *LinkedList[T] {
 	if len(s) == 0 {
 		return nil
@@ -18,8 +22,7 @@ func LinkedListFromSlice[T comparable](s []T) *LinkedList[T] {
 
 	l := &LinkedList[T]{nil, s[len(s)-1]}
 	for i := len(s) - 2; i >= 0; i-- {
-		new_head := LinkedList[T]{l, s[i]}
-		l = &new_head
+		l = Insert[T](l, s[i])
 	}
 	return l
 }
