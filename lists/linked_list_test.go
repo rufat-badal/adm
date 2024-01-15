@@ -12,6 +12,13 @@ var linkedListFromIntSliceTests = [][]int{
 	{-42},
 }
 
+var linkedListFromFloat64SliceTests = [][]float64{
+	{1.0, 2.3, 3.1, 7.5},
+	{1.0, 1.0, 1.0, 1.0, 1.0},
+	{},
+	{-42.42},
+}
+
 func testLinkedListFromSingleSlice[T comparable](t *testing.T, s []T) {
 	errorStart := fmt.Sprintf("LinkedListFromSlice(%v) ", s)
 
@@ -41,4 +48,5 @@ func testLinkedListFromSlice[T comparable](t *testing.T, slices [][]T) {
 
 func TestLinkedListFromSlice(t *testing.T) {
 	testLinkedListFromSlice[int](t, linkedListFromIntSliceTests)
+	testLinkedListFromSlice[float64](t, linkedListFromFloat64SliceTests)
 }
