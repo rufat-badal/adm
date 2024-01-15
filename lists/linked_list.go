@@ -26,3 +26,11 @@ func LinkedListFromSlice[T comparable](s []T) *LinkedList[T] {
 	}
 	return l
 }
+
+func Search[T comparable](l *LinkedList[T], x T) *LinkedList[T] {
+	for l != nil && l.Value != x {
+		l = l.Next
+	}
+
+	return l
+}
