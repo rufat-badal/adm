@@ -90,9 +90,14 @@ func TestSearch(t *testing.T) {
 func testItemAheadSingleData[T comparable](t *testing.T, data sliceTestData[T]) {
 	l := LinkedListFromSlice[T](data.slice)
 
+	errorStart := fmt.Sprintf("Searching for item of first list item %v in linked list:", l)
+	if itemAhead := ItemAhead(l, l); itemAhead != nil {
+		t.Errorf("ItemAhead returned %v but should have returned <nil>", itemAhead)
+	}
+
 	for itemAheadWant := l; itemAheadWant != nil; itemAheadWant = itemAheadWant.Next {
 		node := itemAheadWant.Next
-		errorStart := fmt.Sprintf("Searching for item ahead of %v in linked list:", node)
+		errorStart = fmt.Sprintf("Searching for item ahead of %v in linked list:", node)
 		itemAhead := ItemAhead(l, node)
 		if itemAhead == nil {
 			t.Errorf("%q element was not found", errorStart)
