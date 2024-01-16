@@ -31,6 +31,12 @@ func Search[T comparable](l *LinkedList[T], x T) *LinkedList[T] {
 	for l != nil && l.Value != x {
 		l = l.Next
 	}
+	return l
+}
 
+func ItemAhead[T comparable](l *LinkedList[T], node *LinkedList[T]) *LinkedList[T] {
+	for l != nil && l.Next != node {
+		l = l.Next
+	}
 	return l
 }

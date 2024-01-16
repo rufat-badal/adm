@@ -1,4 +1,4 @@
-package adm 
+package adm
 
 import (
 	"fmt"
@@ -85,4 +85,26 @@ func testSearch[T comparable](t *testing.T, data []sliceTestData[T]) {
 func TestSearch(t *testing.T) {
 	testSearch[int](t, intSliceTests)
 	testSearch[float64](t, float64SliceTests)
+}
+
+func testItemAheadSingleData[T comparable](t *testing.T, data sliceTestData[T]) {
+	if len(data.slice) == 0 {
+		return
+	}
+
+	l := LinkedListFromSlice[T](data.slice)
+	itemAheadWant := l
+	node := l.Next
+
+	for itemAheadWant != nil {
+		errorStart := fmt.Sprintf("Searching for item ahead of %v in linked list:", node)
+		itemAhead := ItemAhead(l, node)
+		if itemAhead == nil {
+			t.Errorf("%q element was not found", errorStart)
+			continue
+		}
+		if itemAhead.Next != node {
+			t.Errorf("%q found element %v that is not followed by %v", errorStart, itemAhead, node)
+		}
+	}
 }
