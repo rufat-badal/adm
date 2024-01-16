@@ -40,3 +40,14 @@ func ItemAhead[T comparable](l *LinkedList[T], node *LinkedList[T]) *LinkedList[
 	}
 	return l
 }
+
+func Delete[T comparable](l *LinkedList[T], node *LinkedList[T]) *LinkedList[T] {
+	itemAhead := ItemAhead[T](l, node)
+	if itemAhead == nil {
+		// node must be the first element of the list
+		return l.Next
+	}
+
+	itemAhead.Next = node.Next
+	return l
+}

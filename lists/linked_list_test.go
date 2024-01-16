@@ -119,3 +119,35 @@ func TestItemAhead(t *testing.T) {
 	testItemAhead[int](t, intSliceTests)
 	testItemAhead[float64](t, float64SliceTests)
 }
+
+func testDeleteSingleData[T comparable](t *testing.T, data sliceTestData[T]) {
+	if len(data.slice) == 0 {
+		return
+	}
+
+	l := LinkedListFromSlice[T](data.slice)
+	lastNode := l
+	for lastNode.Next != nil {
+		lastNode = lastNode.Next
+	}
+
+	for lastNode != nil {
+		nextToLastNode := ItemAhead[T](l, lastNode)
+		l = Delete[T](l, lastNode)
+		lastNode = nextToLastNode
+	}
+	if l != nil {
+		t.Error("After deleting all elements from the list starting from the back the list did not become empty")
+	}
+}
+
+func testDelete[T comparable](t *testing.T, data []sliceTestData[T]) {
+	for _, e := range data {
+		testDeleteSingleData[T](t, e)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	testDelete[int](t, intSliceTests)
+	testDelete[float64](t, float64SliceTests)
+}
