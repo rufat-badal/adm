@@ -1,4 +1,4 @@
-package adm
+package lists
 
 import (
 	"fmt"
