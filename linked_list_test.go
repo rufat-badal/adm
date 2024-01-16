@@ -88,15 +88,10 @@ func TestSearch(t *testing.T) {
 }
 
 func testItemAheadSingleData[T comparable](t *testing.T, data sliceTestData[T]) {
-	if len(data.slice) == 0 {
-		return
-	}
-
 	l := LinkedListFromSlice[T](data.slice)
-	itemAheadWant := l
-	node := l.Next
 
-	for itemAheadWant != nil {
+	for itemAheadWant := l; itemAheadWant != nil; itemAheadWant = itemAheadWant.Next {
+		node := itemAheadWant.Next
 		errorStart := fmt.Sprintf("Searching for item ahead of %v in linked list:", node)
 		itemAhead := ItemAhead(l, node)
 		if itemAhead == nil {
@@ -107,4 +102,15 @@ func testItemAheadSingleData[T comparable](t *testing.T, data sliceTestData[T]) 
 			t.Errorf("%q found element %v that is not followed by %v", errorStart, itemAhead, node)
 		}
 	}
+}
+
+func testItemAhead[T comparable](t *testing.T, data []sliceTestData[T]) {
+	for _, e := range data {
+		testItemAheadSingleData[T](t, e)
+	}
+}
+
+func TestItemAhead(t *testing.T) {
+	testItemAhead[int](t, intSliceTests)
+	testItemAhead[float64](t, float64SliceTests)
 }
