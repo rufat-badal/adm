@@ -4,13 +4,8 @@ import (
 	"math/rand"
 )
 
-type EdgeNode struct {
-	Head int
-	Next *EdgeNode
-}
-
 type Graph struct {
-	Edges       []*EdgeNode
+	Edges       [][]int
 	Degree      []int
 	Directed    bool
 	NumVertices int
@@ -18,8 +13,7 @@ type Graph struct {
 }
 
 func (g *Graph) addDirectedEdge(tail, head int) {
-	e := EdgeNode{head, g.Edges[tail]}
-	g.Edges[tail] = &e
+	g.Edges[tail] = append(g.Edges[tail], head)
 }
 
 func (g *Graph) AddEdge(tail, head int) {
@@ -34,7 +28,7 @@ func (g *Graph) AddEdge(tail, head int) {
 }
 
 func NewRandomGraph(nvertices int, edgeProbability float64, directed bool) Graph {
-	edges := make([]*EdgeNode, nvertices)
+	edges := make([][]int, nvertices)
 	degree := make([]int, nvertices)
 	graph := Graph{edges, degree, directed, nvertices, 0}
 	// This algorithm can be improved if edgeProbability is small.
