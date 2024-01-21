@@ -3,12 +3,24 @@ package main
 import (
 	"fmt"
 
-	"github.com/rufat-badal/adm/graphs"
+	queue "github.com/rufat-badal/adm/queues"
 )
 
 func main() {
-	g := graphs.NewRandomGraph(1000, 0.1, false)
-	n := g.NumVertices * (g.NumVertices - 1) / 2
-	fmt.Printf("Generate graph with %v edges from a total of %v possible edges\n", g.NumEdges, n)
-	fmt.Printf("Statistical edge probability: %v\n", float64(g.NumEdges)/float64(n))
+	q := queue.NewFIFOQueue[int]()
+	for i := 0; i < 17; i++ {
+		q.Enqueue(i)
+		fmt.Printf("Enqueued %v, queue: %v, queue capacity: %v\n", i, q, q.Capacity())
+	}
+	for i := 0; i < 13; i++ {
+		x, e := q.Dequeue()
+		if e != nil {
+			break
+		}
+		fmt.Printf("Dequeued %v, queue: %v, queue capacity: %v\n", x, q, q.Capacity())
+	}
+	for i := 17; i < 33; i++ {
+		q.Enqueue(i)
+		fmt.Printf("Enqueued %v, queue: %v, queue capacity: %v\n", i, q, q.Capacity())
+	}
 }
