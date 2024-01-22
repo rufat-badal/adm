@@ -72,3 +72,7 @@ func (q *FIFOQueue[T]) Dequeue() (T, error) {
 	q.decreaseCapacity()
 	return first, nil
 }
+
+func (q FIFOQueue[T]) IsEmpty() bool {
+	return q.Length == 0
+}
