@@ -13,10 +13,8 @@ type FIFOQueue[T FIFOQueueItemType] struct {
 	Length int
 }
 
-const startLength = 4
-
 func NewFIFOQueue[T FIFOQueueItemType]() FIFOQueue[T] {
-	return FIFOQueue[T]{make([]T, startLength), 0, 0}
+	return FIFOQueue[T]{make([]T, 1), 0, 0}
 }
 
 func (q *FIFOQueue[T]) increaseCapacity() {

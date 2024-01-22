@@ -7,14 +7,14 @@ import (
 )
 
 func main() {
-	s := queue.NewStack[int]()
-	fmt.Println(s)
+	q := queue.NewFIFOQueue[int]()
+	fmt.Println(q)
 	for i := 0; i < 20; i++ {
-		s.Push(i + 42)
-		fmt.Printf("Pushed %v on stack, stack: %v, length: %v, capacity: %v\n", i+42, s, s.Length, s.Capacity())
+		q.Enqueue(i + 42)
+		fmt.Printf("Enqueued %v, queue: %v, length: %v, capacity: %v\n", i+42, q, q.Length, q.Capacity())
 	}
 	for i := 0; i < 15; i++ {
-		popped, _ := s.Pop()
-		fmt.Printf("Popped %v of the stack, stack: %v, capacity: %v\n", popped, s, s.Capacity())
+		popped, _ := q.Dequeue()
+		fmt.Printf("Dequeued %v, queue: %v, capacity: %v\n", popped, q, q.Capacity())
 	}
 }
