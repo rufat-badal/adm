@@ -29,7 +29,7 @@ func (s *Stack[T]) Push(item T) {
 
 func (s *Stack[T]) decreaseCapacity() {
 	if len(s.data) < cap(s.data)/4 {
-		newData := make([]T, cap(s.data)/2)
+		newData := make([]T, len(s.data), cap(s.data)/2)
 		copy(newData, s.data)
 		s.data = newData
 	}
