@@ -1,7 +1,6 @@
 package graphs
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -19,7 +18,6 @@ func (g *Graph) addDirectedEdge(tail, head int) {
 
 func (g *Graph) AddEdge(tail, head int) {
 	// The caller of this function must check by himself that only new edges are added.
-	fmt.Println(g.Edges)
 	g.addDirectedEdge(tail, head)
 	g.Degree[tail]++
 	g.NumEdges++
@@ -27,8 +25,6 @@ func (g *Graph) AddEdge(tail, head int) {
 		g.addDirectedEdge(head, tail)
 		g.Degree[head]++
 	}
-	fmt.Println(g.Edges)
-	fmt.Println()
 }
 
 func newEmptyGraph(nvertices int, directed bool) Graph {
@@ -56,16 +52,13 @@ func NewRandomGraph(nvertices int, edgeProbability float64, directed bool) Graph
 func NewRandomDAG(nvertices int, edgeProbability float64) (Graph, []int) {
 	// We will create a graph whose vertices have this exact topological sorting:
 	verticesSorted := rand.Perm(nvertices)
-	fmt.Println(verticesSorted)
 	graph := newEmptyGraph(nvertices, true)
 	for i := 0; i < len(verticesSorted)-1; i++ {
 		// Assure that verticesSorted is the topological sorting of the graph
-		fmt.Printf("adding edge (%v, %v)\n", verticesSorted[i], verticesSorted[i+1])
 		graph.AddEdge(verticesSorted[i], verticesSorted[i+1])
 		// Add (possibly) further edges depending on the edge probability
 		for j := i + 1; j < len(verticesSorted); j++ {
 			if rand.Float64() < edgeProbability {
-				fmt.Printf("adding edge (%v, %v)\n", verticesSorted[i], verticesSorted[j])
 				graph.AddEdge(verticesSorted[i], verticesSorted[j])
 			}
 		}
