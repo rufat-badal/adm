@@ -49,7 +49,7 @@ func NewRandomGraph(nvertices int, edgeProbability float64, directed bool) Graph
 	return graph
 }
 
-func NewRandomDAG(nvertices int, edgeProbability float64) Graph {
+func NewRandomDAG(nvertices int, edgeProbability float64) (Graph, []int) {
 	// We will create a graph whose vertices have this exact topological sorting:
 	verticesSorted := rand.Perm(nvertices)
 	graph := newEmptyGraph(nvertices, true)
@@ -63,5 +63,5 @@ func NewRandomDAG(nvertices int, edgeProbability float64) Graph {
 			}
 		}
 	}
-	return graph
+	return graph, verticesSorted
 }

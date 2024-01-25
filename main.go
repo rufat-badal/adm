@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	h := graphs.NewRandomDAG(100, 0.1)
+	h, _ := graphs.NewRandomDAG(100, 0.1)
 	fmt.Println(h.NumEdges)
 }
