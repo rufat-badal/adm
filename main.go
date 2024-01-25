@@ -9,9 +9,10 @@ import (
 
 func main() {
 	r := rand.New(rand.NewSource(42))
-	nvertices := 10
+	nvertices := 30
 	sortedWant := r.Perm(nvertices)
 	g := graphs.NewRandomDAG(sortedWant, 0.1)
+	g.AddEdge(sortedWant[20], sortedWant[10])
 	sortedGot, e := graphs.TopologicalSort(g)
 	if e != nil {
 		fmt.Println(e)
