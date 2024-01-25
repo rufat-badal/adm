@@ -2,6 +2,7 @@ package graphs
 
 import (
 	"errors"
+	"fmt"
 
 	queue "github.com/rufat-badal/adm/queues"
 )
@@ -24,6 +25,7 @@ func dfsSort(g Graph, x int, states []NodeState, parent []int, s *queue.Stack[in
 			parent[y] = x
 			dfsSort(g, y, states, parent, s, cyclic)
 		} else if states[y] == Discovered {
+			fmt.Printf("cycle closed from %v to %v\n", x, y)
 			*cyclic = true
 			return
 		}
