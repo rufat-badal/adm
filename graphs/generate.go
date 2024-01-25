@@ -49,19 +49,18 @@ func NewRandomGraph(nvertices int, edgeProbability float64, directed bool) Graph
 	return graph
 }
 
-func NewRandomDAG(nvertices int, edgeProbability float64) (Graph, []int) {
+func NewRandomDAG(sorted []int, edgeProbability float64) Graph {
 	// We will create a graph whose vertices have this exact topological sorting:
-	verticesSorted := rand.Perm(nvertices)
-	graph := newEmptyGraph(nvertices, true)
-	for i := 0; i < len(verticesSorted)-1; i++ {
+	graph := newEmptyGraph(len(sorted), true)
+	for i := 0; i < len(sorted)-1; i++ {
 		// Assure that verticesSorted is the topological sorting of the graph
-		graph.AddEdge(verticesSorted[i], verticesSorted[i+1])
+		graph.AddEdge(sorted[i], sorted[i+1])
 		// Add (possibly) further edges depending on the edge probability
-		for j := i + 1; j < len(verticesSorted); j++ {
+		for j := i + 1; j < len(sorted); j++ {
 			if rand.Float64() < edgeProbability {
-				graph.AddEdge(verticesSorted[i], verticesSorted[j])
+				graph.AddEdge(sorted[i], sorted[j])
 			}
 		}
 	}
-	return graph, verticesSorted
+	return graph
 }
