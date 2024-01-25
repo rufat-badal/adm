@@ -7,6 +7,12 @@ import (
 )
 
 func main() {
-	h, _ := graphs.NewRandomDAG(100, 0.1)
-	fmt.Println(h.NumEdges)
+	g, _ := graphs.NewRandomDAG(5, 0.4)
+	fmt.Println(g.NumEdges)
+	sorted, e := graphs.TopologicalSort(g)
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
+	fmt.Println(sorted)
 }

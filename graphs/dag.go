@@ -14,17 +14,22 @@ const (
 	Processed
 )
 
-func dfsSort(g Graph, x int, states []NodeState, parent []int, s *queue.Stack[int]) bool {
+func dfsSort(g Graph, x int, states []NodeState, parent []int, s *queue.Stack[int], cyclic *bool) {
 	states[x] = Discovered
 	for y := range g.Edges[x] {
+		if *cyclic {
+			return
+		}
 		if states[y] == Undiscovered {
 			parent[y] = x
-			dfsSort(g, y, states, parent, s)
-		} else if states[y] != Processed {
-			return true
+			dfsSort(g, y, states, parent, s, cyclic)
+		} else if states[y] == Discovered {
+			*cyclic = true
+			return
 		}
 	}
-	return false
+	states[x] = Processed
+	s.Push(x)
 }
 
 func TopologicalSort(g Graph) ([]int, error) {
@@ -37,10 +42,19 @@ func TopologicalSort(g Graph) ([]int, error) {
 	cyclic := false
 	for i := 0; i < g.NumVertices; i++ {
 		if states[i] == Undiscovered {
-			cyclic = dfsSort(g, i, states, parent, &s)
+			dfsSort(g, i, states, parent, &s, &cyclic)
 		}
 		if cyclic {
 			return *new([]int), errors.New("cycle detected, cannot sort cyclic graph")
 		}
 	}
+	sorted := make([]int, g.NumVertices)
+	for i := 0; i < g.NumVertices; i++ {
+		x, e := s.Pop()
+		if e != nil {
+			return *new([]int), errors.New("dfs missed a node of the graph, this should not happen!")
+		}
+		sorted[i] = x
+	}
+	return sorted, nil
 }
