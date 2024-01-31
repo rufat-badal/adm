@@ -5,19 +5,19 @@ import (
 	"fmt"
 )
 
-type HeapValueType interface{}
-
-type HeapItem[T HeapValueType] struct {
+type HeapItem[T comparable] struct {
 	Value  T
 	Weight int
 }
 
-type MinHeap[T HeapValueType] struct {
+type MinHeap[T comparable] struct {
 	data []HeapItem[T]
+	// All items in the queue must have distinct values!
+	indexOf map[T]int
 }
 
-func NewMinHeap[T HeapValueType]() MinHeap[T] {
-	return MinHeap[T]{make([]HeapItem[T], 0)}
+func NewMinHeap[T comparable]() MinHeap[T] {
+	return MinHeap[T]{make([]HeapItem[T], 0), make(map[T]int)}
 }
 
 func Parent(i int) int {
@@ -39,23 +39,35 @@ func (h MinHeap[T]) IsEmpty() bool {
 	return len(h.data) == 0
 }
 
-func (h *MinHeap[T]) bubbleUp(idx int) {
-	pIdx := Parent(idx)
-	if pIdx == -1 {
+func (h *MinHeap[T]) swap(i, j int) {
+	x, y := h.data[i], h.data[j]
+	h.data[i], h.data[j] = y, x
+	h.indexOf[x.Value], h.indexOf[y.Value] = j, i
+}
+
+func (h *MinHeap[T]) bubbleUp(id int) {
+	pid := Parent(id)
+	if pid == -1 {
 		return
 	}
-	p := h.data[pIdx]
-	c := h.data[idx]
+	p, c := h.data[pid], h.data[id]
 	if p.Weight <= c.Weight {
 		return
 	}
-	h.data[pIdx], h.data[idx] = c, p
-	h.bubbleUp(pIdx)
+	h.swap(pid, id)
+	h.bubbleUp(pid)
 }
 
-func (h *MinHeap[T]) Insert(item HeapItem[T]) {
+func (h *MinHeap[T]) Insert(item HeapItem[T]) error {
+	_, valuePresent := h.indexOf[item.Value]
+	if valuePresent {
+		return fmt.Errorf("an item with the same value %v was already inerted into the queue", item.Value)
+	}
 	h.data = append(h.data, item)
-	h.bubbleUp(len(h.data) - 1)
+	id := len(h.data) - 1
+	h.indexOf[item.Value] = id
+	h.bubbleUp(id)
+	return nil
 }
 
 func (h MinHeap[T]) Capacity() int {
@@ -70,23 +82,23 @@ func (h MinHeap[T]) String() string {
 	return fmt.Sprintf("%v", stringData)
 }
 
-func (h *MinHeap[T]) bubbleDown(p int) {
-	min := p
-	c := FirstChild(p)
+func (h *MinHeap[T]) bubbleDown(id int) {
+	min := id
+	cid := FirstChild(id)
 	// Find index of the node of minimal weight in the family of the node at p
 	for i := 0; i < 2; i++ {
-		if (c + i) >= len(h.data) {
+		if (cid + i) >= len(h.data) {
 			break
 		}
-		if h.data[c+i].Weight < h.data[min].Weight {
-			min = c + i
+		if h.data[cid+i].Weight < h.data[min].Weight {
+			min = cid + i
 		}
 	}
-
-	if min != p {
-		h.data[p], h.data[min] = h.data[min], h.data[p]
-		h.bubbleDown(min)
+	if min == id {
+		return
 	}
+	h.swap(id, min)
+	h.bubbleDown(min)
 }
 
 func (h *MinHeap[T]) decreaseCapacity() {
@@ -102,9 +114,12 @@ func (h *MinHeap[T]) ExtractMin() (HeapItem[T], error) {
 		return *new(HeapItem[T]), errors.New("cannot extract minimum from an empty heap")
 	}
 	min := h.data[0]
-	h.data[0] = h.data[len(h.data)-1]
+	delete(h.indexOf, min.Value)
+	last := h.data[len(h.data)-1]
+	h.data[0] = last
+	h.indexOf[last.Value] = 0
 	h.data = h.data[:len(h.data)-1]
-	if len(h.data) > 0 {
+	if len(h.data) > 1 {
 		h.bubbleDown(0)
 	}
 	h.decreaseCapacity()
