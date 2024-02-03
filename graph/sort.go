@@ -3,7 +3,7 @@ package graph
 import (
 	"errors"
 
-	queue "github.com/rufat-badal/adm/queues"
+	"github.com/rufat-badal/adm/queue"
 )
 
 type NodeState int

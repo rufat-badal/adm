@@ -3,11 +3,11 @@ package graph
 import (
 	"log"
 
-	queues "github.com/rufat-badal/adm/queues"
+	"github.com/rufat-badal/adm/queue"
 )
 
 func bfsFromNode(graph Graph, discovered []bool, parent []int, start int) {
-	q := queues.NewFIFOQueue[int]()
+	q := queue.NewFIFOQueue[int]()
 	q.Enqueue(start)
 	discovered[start] = true
 
