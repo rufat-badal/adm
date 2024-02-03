@@ -7,7 +7,7 @@ import (
 )
 
 func TestTopologicalSort(t *testing.T) {
-	r := rand.New(rand.NewSource(42))
+	r := rand.New(rand.NewSource(RAND_SEED))
 	nvertices := 1000
 	sortedWant := r.Perm(nvertices)
 	g := NewRandomDAG(sortedWant, 0.1)
