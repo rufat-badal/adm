@@ -6,21 +6,38 @@ import (
 )
 
 func randomMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
+	r := rand.New(rand.NewSource(RAND_SEED))
 	h := NewMinHeap[T]()
-	rand.Shuffle(len(items), func(i, j int) { items[i], items[j] = items[j], items[i] })
-	for _, x := range items {
+	itemsShuffled := make([]HeapItem[T], len(items))
+	copy(itemsShuffled, items)
+	r.Shuffle(len(items), func(i, j int) { itemsShuffled[i], itemsShuffled[j] = itemsShuffled[j], itemsShuffled[i] })
+	for _, x := range itemsShuffled {
 		h.Insert(x)
 	}
 	return h
 }
 
-func TestExtractMin(t *testing.T) {
-	const nitems = 1000
+func sortedHeapItems(nitems int) []HeapItem[int] {
 	items := make([]HeapItem[int], nitems)
 	for i := 0; i < nitems; i++ {
 		items[i] = HeapItem[int]{i, i}
 	}
+	return items
+}
+
+func TestInsert(t *testing.T) {
+	const nitems = 10000
+	items := sortedHeapItems(nitems)
 	h := randomMinHeap[int](items)
+	for i := 0; i < nitems; i++ {
+		it := h.data[h.indexOf[i]]
+		if it.Weight != i {
+			t.Errorf("item %v has wrong weight, should be %v", it, i)
+		}
+	}
+}
+
+func testExtractAll(t *testing.T, h MinHeap[int], nitems int) {
 	for i := 0; i < nitems; i++ {
 		x, e := h.ExtractMin()
 		if e != nil {
@@ -30,4 +47,40 @@ func TestExtractMin(t *testing.T) {
 			t.Errorf("Expected item %v, but got item %v", HeapItem[int]{i, i}, x)
 		}
 	}
+}
+
+func TestExtractMin(t *testing.T) {
+	const nitems = 10000
+	items := sortedHeapItems(nitems)
+	h := randomMinHeap[int](items)
+	testExtractAll(t, h, nitems)
+}
+
+type decreaseOp[T comparable] struct {
+	Value T
+	Delta int
+}
+
+func TestDecreaseWeight(t *testing.T) {
+	r := rand.New(rand.NewSource(RAND_SEED))
+	const nitems = 10000
+	const ndecreases = 1000
+	const maxDecrease = 100
+	items := sortedHeapItems(nitems)
+	var decreases [ndecreases]decreaseOp[int]
+	for i := 0; i < ndecreases; i++ {
+		decreases[i] = decreaseOp[int]{r.Intn(nitems), r.Intn(maxDecrease) + 1}
+	}
+	for _, d := range decreases {
+		items[d.Value].Weight += d.Delta
+	}
+	h := randomMinHeap[int](items)
+	for _, d := range decreases {
+		e := h.DecreaseWeight(d.Value, items[d.Value].Weight-d.Delta)
+		if e != nil {
+			t.Errorf("decreasing weight item with value %v should have succeeded, but did not", d.Value)
+		}
+		items[d.Value].Weight -= d.Delta
+	}
+	testExtractAll(t, h, nitems)
 }
