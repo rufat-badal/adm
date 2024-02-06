@@ -2,21 +2,16 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 
-	"github.com/rufat-badal/adm/graphs"
+	"github.com/rufat-badal/adm/graph"
 )
 
 func main() {
-	r := rand.New(rand.NewSource(42))
-	nvertices := 30
-	sortedWant := r.Perm(nvertices)
-	g := graphs.NewRandomDAG(sortedWant, 0.1)
-	g.AddEdge(sortedWant[20], sortedWant[10])
-	sortedGot, e := graphs.TopologicalSort(g)
-	if e != nil {
-		fmt.Println(e)
-		return
+	s := make([]int, 10)
+	for i := 0; i < len(s); i++ {
+		s[i] = i
 	}
-	fmt.Printf("want: %v, got: %v", sortedWant, sortedGot)
+	fmt.Println(s)
+	graph.Sort[int](s, func(x, y int) bool { return x < y })
+	fmt.Println(s)
 }
