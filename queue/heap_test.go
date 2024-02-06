@@ -7,14 +7,10 @@ import (
 
 func randomMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
 	r := rand.New(rand.NewSource(RAND_SEED))
-	h := NewMinHeap[T]()
 	itemsShuffled := make([]HeapItem[T], len(items))
 	copy(itemsShuffled, items)
 	r.Shuffle(len(items), func(i, j int) { itemsShuffled[i], itemsShuffled[j] = itemsShuffled[j], itemsShuffled[i] })
-	for _, x := range itemsShuffled {
-		h.Insert(x)
-	}
-	return h
+	return NewMinHeap[T](itemsShuffled)
 }
 
 func sortedHeapItems(nitems int) []HeapItem[int] {

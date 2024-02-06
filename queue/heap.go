@@ -16,8 +16,17 @@ type MinHeap[T comparable] struct {
 	indexOf map[T]int
 }
 
-func NewMinHeap[T comparable]() MinHeap[T] {
-	return MinHeap[T]{make([]HeapItem[T], 0), make(map[T]int)}
+func NewMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
+	// No copy of items is made!
+	indexOf := make(map[T]int)
+	for i, it := range items {
+		indexOf[it.Value] = i
+	}
+	h := MinHeap[T]{items, indexOf}
+	for i := len(items)/2 - 1; i >= 0; i-- {
+		h.bubbleDown(i)
+	}
+	return h
 }
 
 func Parent(i int) int {
