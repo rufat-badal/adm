@@ -11,7 +11,6 @@ func main() {
 	for i := 0; i < len(s); i++ {
 		s[i] = i
 	}
-	fmt.Println(s)
-	graph.Sort[int](s, func(x, y int) bool { return x < y })
+	graph.Sort[int](s, func(i, j int) bool { return i < j })
 	fmt.Println(s)
 }
