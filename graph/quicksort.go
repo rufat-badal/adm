@@ -1,13 +1,11 @@
 package graph
 
 import (
-	"fmt"
 	"math/rand"
 )
 
 func Sort[T interface{}](s []T, less func(x, y T) bool) {
 	rand.Shuffle(len(s), func(i, j int) { s[i], s[j] = s[j], s[i] })
-	fmt.Println(s)
 	sortRecursive[T](s, 0, len(s), less)
 }
 
@@ -15,8 +13,9 @@ func sortRecursive[T interface{}](s []T, start int, end int, less func(x, y T) b
 	if start >= end-1 {
 		return
 	}
-	partition(s, start, end, less)
-	fmt.Println(s)
+	mid := partition(s, start, end, less)
+	sortRecursive[T](s, start, mid, less)
+	sortRecursive[T](s, mid+1, end, less)
 }
 
 func partition[T interface{}](s []T, start int, end int, less func(x, y T) bool) int {
