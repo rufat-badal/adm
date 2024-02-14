@@ -16,7 +16,8 @@ func bfsFromNode(graph Graph, discovered []bool, parent []int, start int) {
 		if e != nil {
 			log.Fatal(e)
 		}
-		for _, y := range graph.Edges[x] {
+		for _, edge := range graph.Edges[x] {
+			y := edge.Head
 			if !discovered[y] {
 				parent[y] = x
 				q.Enqueue(y)

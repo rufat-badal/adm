@@ -16,7 +16,8 @@ const (
 
 func dfsSort(g Graph, x int, states []NodeState, parent []int, s *queue.Stack[int], cyclic *bool) {
 	states[x] = Discovered
-	for _, y := range g.Edges[x] {
+	for _, edge := range g.Edges[x] {
+		y := edge.Head
 		if *cyclic {
 			return
 		}
