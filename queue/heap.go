@@ -135,16 +135,16 @@ func (h *MinHeap[T]) ExtractMin() (HeapItem[T], error) {
 	return min, nil
 }
 
-func (h *MinHeap[T]) DecreaseWeight(value T, weight int) error {
+func (h *MinHeap[T]) DecreaseWeight(value T, newWeight int) {
+	// DecreaseWeight does nothing if no item with value 'value' is present or the newWeight is larger
 	id, ok := h.indexOf[value]
 	if !ok {
-		return fmt.Errorf("heap item with value %v does not exist in the heap", value)
+		return
 	}
 	item := &h.data[id]
-	if item.Weight < weight {
-		return fmt.Errorf("new weight %v is larger than current weight %v", weight, item.Weight)
+	if item.Weight < newWeight {
+		return
 	}
-	item.Weight = weight
+	item.Weight = newWeight
 	h.bubbleUp(id)
-	return nil
 }

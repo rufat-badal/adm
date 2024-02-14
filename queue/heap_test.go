@@ -72,10 +72,7 @@ func TestDecreaseWeight(t *testing.T) {
 	}
 	h := randomMinHeap[int](items)
 	for _, d := range decreases {
-		e := h.DecreaseWeight(d.Value, items[d.Value].Weight-d.Delta)
-		if e != nil {
-			t.Errorf("decreasing weight item with value %v should have succeeded, but did not", d.Value)
-		}
+		h.DecreaseWeight(d.Value, items[d.Value].Weight-d.Delta)
 		items[d.Value].Weight -= d.Delta
 	}
 	testExtractAll(t, h, nitems)
