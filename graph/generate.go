@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -72,4 +73,46 @@ func NewRandomDAG(sorted []int, edgeProbability float64, maxWeight int) Graph {
 		}
 	}
 	return graph
+}
+
+func NewTreeFromPruefer(pruefer []int) (Graph, error) {
+	nverts := len(pruefer) + 2
+	for i, v := range pruefer {
+		if v < 0 || v >= nverts {
+			return *new(Graph), fmt.Errorf("incorrect vertex id %v in Pruefer sequence at index %v (must be in 0 ... %v)", v, i, nverts-1)
+		}
+	}
+
+	g := newEmptyGraph(nverts, false)
+	degree := make([]int, nverts)
+	for i := 0; i < len(degree); i++ {
+		degree[i] = 1
+	}
+	for _, i := range pruefer {
+		degree[i]++
+	}
+	for _, i := range pruefer {
+		for j, d := range degree {
+			if d == 1 {
+				g.AddEdge(i, j, 1)
+				degree[i]--
+				degree[j]--
+				break
+			}
+		}
+	}
+	u, v := -1, -1
+	for i, d := range degree {
+		if d == 1 {
+			if u == -1 {
+				u = i
+			} else {
+				v = i
+				break
+			}
+		}
+	}
+	g.AddEdge(u, v, 1)
+
+	return g, nil
 }

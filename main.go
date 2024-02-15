@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/rufat-badal/adm/graph"
 )
 
 func main() {
-	s := make([]int, 30)
-	for i := 0; i < len(s); i++ {
-		s[i] = i
+	n := 20
+	pruefer := make([]int, n-2)
+	for i := 0; i < len(pruefer); i++ {
+		pruefer[i] = rand.Intn(n)
 	}
-	graph.Sort[int](s, func(i, j int) bool { return i < j })
-	fmt.Println(s)
+	fmt.Println(pruefer)
+	g, _ := graph.NewTreeFromPruefer(pruefer)
+	fmt.Println(g.NumVertices)
 }
