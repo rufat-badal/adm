@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"fmt"
 	"math/rand"
 	"slices"
 	"testing"
@@ -13,7 +12,6 @@ func TestTopologicalSort(t *testing.T) {
 	sortedWant := r.Perm(nvertices)
 	g := NewRandomDAG(sortedWant, 0.1, 1)
 	sortedGot, e := TopologicalSort(g)
-	fmt.Println(e)
 	if e != nil {
 		t.Error(e)
 	} else if !slices.Equal(sortedWant, sortedGot) {
