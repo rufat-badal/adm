@@ -3,6 +3,8 @@ package graph
 import (
 	"fmt"
 	"math/rand"
+
+	"github.com/rufat-badal/adm/queue"
 )
 
 type Edge struct {
@@ -115,4 +117,14 @@ func NewTreeFromPruefer(pruefer []int) (Graph, error) {
 	g.AddEdge(u, v, 1)
 
 	return g, nil
+}
+
+func PrueferFromTree(g Graph) []int {
+	// This function will modifie the input graph g!
+	var leafs []queue.HeapItem[int]
+	for i, d := range g.Degree {
+		if d == 1 {
+			leafs = append(leafs)
+		}
+	}
 }
