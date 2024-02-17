@@ -22,16 +22,33 @@ type Graph struct {
 
 func (g *Graph) addDirectedEdge(tail, head, weight int) {
 	g.Edges[tail] = append(g.Edges[tail], Edge{head, weight})
+	g.Degree[tail]++
+}
+
+func (g *Graph) removeDirectedEdge(tail, head int) {
+	for edgeId, edge := range g.Edges[tail] {
+		if edge.Head == head {
+			g.Edges[tail][edgeId] = g.Edges[tail][len(g.Edges[tail])-1]
+			g.Edges[tail] = g.Edges[tail][:len(g.Edges[tail])-1]
+			g.Degree[tail]--
+		}
+	}
 }
 
 func (g *Graph) AddEdge(tail, head, weight int) {
 	// The caller of this function must check by himself that only new edges are added.
 	g.addDirectedEdge(tail, head, weight)
-	g.Degree[tail]++
 	g.NumEdges++
 	if !g.Directed {
 		g.addDirectedEdge(head, tail, weight)
-		g.Degree[head]++
+	}
+}
+
+func (g *Graph) RemoveEdge(tail, head int) {
+	g.removeDirectedEdge(tail, head)
+	g.NumEdges--
+	if !g.Directed {
+		g.removeDirectedEdge(head, tail)
 	}
 }
 
@@ -124,7 +141,26 @@ func PrueferFromTree(g Graph) []int {
 	var leafs []queue.HeapItem[int]
 	for i, d := range g.Degree {
 		if d == 1 {
-			leafs = append(leafs)
+			leafs = append(leafs, queue.HeapItem[int]{Value: i, Weight: i})
 		}
 	}
+	leafsHeap := queue.NewMinHeap[int](leafs)
+	var pruefer []int
+	var i, j int
+	nverts := g.NumVertices
+	for l, e := leafsHeap.ExtractMin(); e == nil; l, e = leafsHeap.ExtractMin() {
+		if nverts == 2 {
+			break
+		}
+		i = l.Value
+		j = g.Edges[i][0].Head
+		pruefer = append(pruefer, j)
+		g.RemoveEdge(i, j)
+		if g.Degree[j] == 1 {
+			leafsHeap.Insert(queue.HeapItem[int]{Value: j, Weight: j})
+		}
+		nverts--
+	}
+
+	return pruefer
 }
