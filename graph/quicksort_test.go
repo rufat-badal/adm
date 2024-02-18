@@ -11,13 +11,13 @@ type sortableItem struct {
 }
 
 func TestSort(t *testing.T) {
-	r := rand.New(rand.NewSource(RAND_SEED))
+	rng := rand.New(rand.NewSource(RAND_SEED))
 	const nitems = 1000000
 	s := make([]sortableItem, nitems)
 	for i := 0; i < len(s); i++ {
-		s[i] = sortableItem{r.Int(), i}
+		s[i] = sortableItem{rng.Int(), i}
 	}
-	r.Shuffle(len(s), func(i, j int) { s[i], s[j] = s[j], s[i] })
+	rng.Shuffle(len(s), func(i, j int) { s[i], s[j] = s[j], s[i] })
 	Sort[sortableItem](s, func(x, y sortableItem) bool { return x.Weight < y.Weight })
 	for i, it := range s {
 		if it.Weight != i {

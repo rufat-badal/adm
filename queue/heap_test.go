@@ -6,10 +6,10 @@ import (
 )
 
 func randomMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
-	r := rand.New(rand.NewSource(RAND_SEED))
+	rng := rand.New(rand.NewSource(RAND_SEED))
 	itemsShuffled := make([]HeapItem[T], len(items))
 	copy(itemsShuffled, items)
-	r.Shuffle(len(items), func(i, j int) { itemsShuffled[i], itemsShuffled[j] = itemsShuffled[j], itemsShuffled[i] })
+	rng.Shuffle(len(items), func(i, j int) { itemsShuffled[i], itemsShuffled[j] = itemsShuffled[j], itemsShuffled[i] })
 	return NewMinHeap[T](itemsShuffled)
 }
 
@@ -58,14 +58,14 @@ type decreaseOp[T comparable] struct {
 }
 
 func TestDecreaseWeight(t *testing.T) {
-	r := rand.New(rand.NewSource(RAND_SEED))
+	rng := rand.New(rand.NewSource(RAND_SEED))
 	const nitems = 10000
 	const ndecreases = 1000
 	const maxDecrease = 100
 	items := sortedHeapItems(nitems)
 	var decreases [ndecreases]decreaseOp[int]
 	for i := 0; i < ndecreases; i++ {
-		decreases[i] = decreaseOp[int]{r.Intn(nitems), r.Intn(maxDecrease) + 1}
+		decreases[i] = decreaseOp[int]{rng.Intn(nitems), rng.Intn(maxDecrease) + 1}
 	}
 	for _, d := range decreases {
 		items[d.Value].Weight += d.Delta
