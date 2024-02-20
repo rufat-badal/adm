@@ -9,6 +9,7 @@ import (
 
 const maxUInt = ^uint(0)
 const MAXINT = int(maxUInt >> 1)
+const MININT = -MAXINT - 1
 
 type MinSpanTreeResult struct {
 	Weight int
