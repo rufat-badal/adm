@@ -32,10 +32,11 @@ func MinSpanTreePrim(g Graph, start int) (MinSpanTreeResult, error) {
 	}
 	nodesHeap := queue.NewMinHeap[int](nodes)
 	inTree := make([]bool, g.NumVertices)
-	nodesHeap.DecreaseWeight(start, 0)
+	nodesHeap.DecreaseWeight(0, 0)
 
 	var v, dist int
-	for n, e := nodesHeap.ExtractMin(); e != nil; n, e = nodesHeap.ExtractMin() {
+
+	for n, e := nodesHeap.ExtractMin(); e == nil; n, e = nodesHeap.ExtractMin() {
 		if inTree[n.Value] {
 			continue
 		}
