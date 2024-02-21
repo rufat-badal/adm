@@ -20,6 +20,23 @@ type Graph struct {
 	NumEdges    int
 }
 
+func (g Graph) Clone() Graph {
+	clonedEdges := make([][]Edge, g.NumVertices)
+	for i := range clonedEdges {
+		clonedEdges[i] = make([]Edge, len(g.Edges[i]))
+		copy(clonedEdges[i], g.Edges[i])
+	}
+	clonedDegree := make([]int, g.NumVertices)
+	copy(clonedDegree, g.Degree)
+	return Graph{
+		Edges:       clonedEdges,
+		Degree:      clonedDegree,
+		Directed:    g.Directed,
+		NumVertices: g.NumVertices,
+		NumEdges:    g.NumEdges,
+	}
+}
+
 func (g *Graph) addDirectedEdge(tail, head, weight int) {
 	g.Edges[tail] = append(g.Edges[tail], Edge{head, weight})
 	g.Degree[tail]++
