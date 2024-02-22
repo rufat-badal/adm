@@ -27,13 +27,14 @@ func bfsFromNode(graph Graph, discovered []bool, parent []int, start int) {
 	}
 }
 
-func BFS(graph Graph) []int {
+func BFS(graph Graph, start int) []int {
 	discovered := make([]bool, graph.NumVertices)
 	parent := make([]int, graph.NumVertices)
 	for i := 0; i < len(parent); i++ {
 		parent[i] = -1
 	}
-	for node := 0; node < graph.NumVertices; node++ {
+	for i := 0; i < graph.NumVertices; i++ {
+		node := (start + i) % graph.NumVertices
 		if !discovered[node] {
 			bfsFromNode(graph, discovered, parent, node)
 		}

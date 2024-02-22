@@ -7,7 +7,7 @@ import (
 
 func minSpanTreeSimple(tree Graph, start int) MinSpanTreeResult {
 	// Minimum spanning tree when the input is already a tree.
-	parent := BFS(tree)
+	parent := BFS(tree, start)
 	weight := 0
 	for _, edges := range tree.Edges {
 		for _, edge := range edges {
@@ -20,7 +20,7 @@ func minSpanTreeSimple(tree Graph, start int) MinSpanTreeResult {
 
 func randomizePrimTreeEdgeWeights(tree *Graph, rng *rand.Rand) {
 	const maxWeight = 5
-	parent := BFS(*tree)
+	parent := BFS(*tree, 0)
 	weight := make([]int, tree.NumVertices)
 	for i := range weight {
 		weight[i] = rng.Intn(maxWeight)
@@ -103,7 +103,7 @@ outer:
 	return g
 }
 
-func TestMinSpanTreePrim(t *testing.T) {
+func testMinSpanTreeGeneric(t *testing.T, minSpanTree func(g Graph, start int) (MinSpanTreeResult, error)) {
 	const nverts = 10000
 	const start = 0
 	const nedges = 10000
@@ -120,7 +120,7 @@ func TestMinSpanTreePrim(t *testing.T) {
 	randomizePrimTreeEdgeWeights(&tree, rng)
 	resShould := minSpanTreeSimple(tree, start)
 	g := addRandomEdgesToPrimTree(tree, resShould.Parent, nedges, rng)
-	res, _ := MinSpanTreePrim(g, start)
+	res, _ := minSpanTree(g, start)
 	if e != nil {
 		t.Fatal("could not run Prim's algorithm on valid graph without cycles")
 	}
@@ -135,4 +135,9 @@ func TestMinSpanTreePrim(t *testing.T) {
 			t.Errorf("Parent of %v is %v, but should be %v", i, res.Parent[i], resShould.Parent[i])
 		}
 	}
+}
+
+func TestMinSpanTree(t *testing.T) {
+	testMinSpanTreeGeneric(t, MinSpanTreePrim)
+	testMinSpanTreeGeneric(t, MinSpanTreeKruskal)
 }
