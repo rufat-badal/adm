@@ -18,7 +18,7 @@ func minSpanTreeSimple(tree Graph, start int) MinSpanTreeResult {
 	return MinSpanTreeResult{Weight: weight, Parent: parent}
 }
 
-func randomizePrimTreeEdgeWeights(tree *Graph, rng *rand.Rand) {
+func randomizeTreeEdgeWeights(tree *Graph, rng *rand.Rand) {
 	const maxWeight = 5
 	parent := BFS(*tree, 0)
 	weight := make([]int, tree.NumVertices)
@@ -37,7 +37,7 @@ func randomizePrimTreeEdgeWeights(tree *Graph, rng *rand.Rand) {
 	}
 }
 
-func maxEdgeWeightOnPath(weight []int, parent []int, start int, end int) int {
+func treePath(start int, end int, parent []int) []int {
 	var fromStart, fromEnd []int
 	for i := start; i != -1; i = parent[i] {
 		fromStart = append(fromStart, i)
@@ -54,13 +54,13 @@ func maxEdgeWeightOnPath(weight []int, parent []int, start int, end int) int {
 	}
 	fromStart = fromStart[:len(fromStart)-1-fork]
 	fromEnd = fromEnd[:len(fromEnd)-1-fork]
+	return append(fromStart, fromEnd...)
+}
+
+func maxEdgeWeightOnPath(weight []int, parent []int, start int, end int) int {
+	path := treePath(start, end, parent)
 	maxWeight := -1
-	for _, i := range fromStart {
-		if weight[i] > maxWeight {
-			maxWeight = weight[i]
-		}
-	}
-	for _, i := range fromEnd {
+	for _, i := range path {
 		if weight[i] > maxWeight {
 			maxWeight = weight[i]
 		}
@@ -68,7 +68,13 @@ func maxEdgeWeightOnPath(weight []int, parent []int, start int, end int) int {
 	return maxWeight
 }
 
-func addRandomEdgesToPrimTree(tree Graph, parent []int, nedges int, rng *rand.Rand) Graph {
+func addRandomEdgesToTree(
+	tree Graph,
+	parent []int,
+	nedges int,
+	rng *rand.Rand,
+	pathWeight func(weight []int, parent []int, i int, j int) int,
+) Graph {
 	weight := make([]int, len(parent))
 	for j := range weight {
 		i := parent[j]
@@ -97,7 +103,7 @@ outer:
 				continue outer
 			}
 		}
-		g.AddEdge(i, j, maxEdgeWeightOnPath(weight, parent, i, j)+1)
+		g.AddEdge(i, j, pathWeight(weight, parent, i, j)+1)
 		nedgesAdded++
 	}
 	return g
@@ -117,12 +123,12 @@ func testMinSpanTreeGeneric(t *testing.T, minSpanTree func(g Graph, start int) (
 	if e != nil {
 		t.Fatalf("could not create tree from a valid Pruefer sequence %v", pruefer)
 	}
-	randomizePrimTreeEdgeWeights(&tree, rng)
+	randomizeTreeEdgeWeights(&tree, rng)
 	resShould := minSpanTreeSimple(tree, start)
-	g := addRandomEdgesToPrimTree(tree, resShould.Parent, nedges, rng)
+	g := addRandomEdgesToTree(tree, resShould.Parent, nedges, rng, maxEdgeWeightOnPath)
 	res, _ := minSpanTree(g, start)
 	if e != nil {
-		t.Fatal("could not run Prim's algorithm on valid graph without cycles")
+		t.Fatal("could not run Prim's algorithm on a valid graph without cycles")
 	}
 	if res.Weight != resShould.Weight {
 		t.Errorf("weight of minimal spanning tree is %v (should be %v)", res.Weight, resShould.Weight)
@@ -130,9 +136,9 @@ func testMinSpanTreeGeneric(t *testing.T, minSpanTree func(g Graph, start int) (
 	if len(res.Parent) != len(resShould.Parent) {
 		t.Errorf("Parent property of the result has incorrect length %v (should be %v)", len(res.Parent), len(resShould.Parent))
 	}
-	for i := 0; i < len(res.Parent) && i < len(resShould.Parent); i++ {
+	for i := 0; i < min(len(res.Parent), len(resShould.Parent)); i++ {
 		if res.Parent[i] != resShould.Parent[i] {
-			t.Errorf("Parent of %v is %v, but should be %v", i, res.Parent[i], resShould.Parent[i])
+			t.Errorf("Parent of %v is %v (should be %v)", i, res.Parent[i], resShould.Parent[i])
 		}
 	}
 }
