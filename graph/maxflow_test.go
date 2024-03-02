@@ -57,10 +57,8 @@ func newRandomGeneralGraph(
 func (g *Graph) addPathEdges(tail int, head int, rcap func() int, dprob float64, r *rand.Rand) int {
 	randc := rcap()
 	totalc := randc
-	fmt.Printf("adding edge from %v to %v with capacity %v\n", tail, head, randc)
 	g.AddEdge(tail, head, randc)
 	for r.Float64() < dprob {
-		fmt.Printf("adding edge from %v to %v\n", tail, head)
 		randc = rcap()
 		totalc += randc
 		g.AddEdge(tail, head, randc)
@@ -111,7 +109,29 @@ func (g *Graph) addPath(
 }
 
 func TestMaxFlow(t *testing.T) {
+	const pathLen = 100
+	const lowCap = 100
+	const highCap = 10000
+	const dprob = 0.05
+	const npaths = 10
+	const source = 0
+	const sink = 1
+
 	r := rand.New(rand.NewSource(RAND_SEED))
 	g := newEmptyGraph(2, true)
-	fmt.Println(g.addPath(10, 0, 1, randCapacity(10, 20, r), 0.01, r))
+	maxflowShould := 0
+	minCap := MAXINT
+	var pathCap int
+	for i := 0; i < npaths; i++ {
+		pathCap = g.addPath(pathLen, source, sink, randCapacity(lowCap, highCap, r), dprob, r)
+		maxflowShould += pathCap
+		if pathCap < minCap {
+			minCap = pathCap
+		}
+	}
+	fmt.Println(minCap)
+	maxflow := g.MaxFlow(source, sink)
+	if maxflow != maxflowShould {
+		t.Errorf("wrong max flow %v computed (should be %v)", maxflow, maxflowShould)
+	}
 }
