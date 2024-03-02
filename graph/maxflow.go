@@ -1,6 +1,8 @@
 package graph
 
-import "github.com/rufat-badal/adm/queue"
+import (
+	"github.com/rufat-badal/adm/queue"
+)
 
 type ResidualEdge struct {
 	Head     int
@@ -77,4 +79,52 @@ func (rg ResidualGraph) BFS(start int) []int {
 	}
 
 	return parent
+}
+
+func (rg ResidualGraph) FindEdge(tail, head int) *ResidualEdge {
+	return rg.vertexPairToEdge[VertexPair{tail, head}]
+}
+
+func (rg ResidualGraph) pathVolume(parent []int, start int, end int) int {
+	if parent[end] == -1 {
+		// there is flow from start that can reach end
+		return 0
+	}
+
+	e := rg.FindEdge(parent[end], end)
+	// we assume that pathVolume is called with valid parent slices
+	// => e is never nil
+	if start == parent[end] {
+		return e.Residual
+	} else {
+		return min(rg.pathVolume(parent, start, parent[end]), e.Residual)
+	}
+}
+
+func (rg *ResidualGraph) augmentPath(parent []int, start int, end int, volume int) {
+	if start == end {
+		return
+	}
+	e := rg.FindEdge(parent[end], end)
+	e.Flow += volume
+	e.Residual -= volume
+	e = rg.FindEdge(end, parent[end])
+	e.Residual += volume
+	rg.augmentPath(parent, start, parent[end], volume)
+}
+
+func (g Graph) MaxFlow(source int, sink int) int {
+	rg := g.ResidualGraph()
+	parent := rg.BFS(source)
+	volume := rg.pathVolume(parent, source, sink)
+	mf := 0
+
+	for volume > 0 {
+		mf += volume
+		rg.augmentPath(parent, source, sink, volume)
+		parent = rg.BFS(source)
+		volume = rg.pathVolume(parent, source, sink)
+	}
+
+	return mf
 }
