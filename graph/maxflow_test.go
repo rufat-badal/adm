@@ -60,4 +60,6 @@ func TestMaxFlow(t *testing.T) {
 	rg := g.ResidualGraph()
 	fmt.Println(g.NumEdges)
 	fmt.Println(rg.NumVertices)
+	parent := rg.BFS(0)
+	fmt.Println(parent)
 }
