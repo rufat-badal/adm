@@ -154,7 +154,7 @@ func NewTreeFromPruefer(pruefer []int) (Graph, error) {
 }
 
 func PrueferFromTree(g Graph) []int {
-	// This function will modifie the input graph g!
+	// This function will modify the input graph g!
 	var leafs []queue.HeapItem[int]
 	for i, d := range g.Degree {
 		if d == 1 {
