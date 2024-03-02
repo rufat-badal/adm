@@ -21,7 +21,7 @@ func newEmptyResidualGraph(nvertices int) ResidualGraph {
 	return ResidualGraph{make([][]ResidualEdge, nvertices), make(map[VertexPair]*ResidualEdge), nvertices}
 }
 
-func GenerateResidualGraph(g Graph) ResidualGraph {
+func (g Graph) ResidualGraph() ResidualGraph {
 	// edge weights are interpreted as capacities
 	rg := newEmptyResidualGraph(g.NumVertices)
 	for tail, edges := range g.Edges {

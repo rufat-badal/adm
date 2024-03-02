@@ -57,5 +57,7 @@ func newRandomGeneralGraph(
 func TestMaxFlow(t *testing.T) {
 	r := rand.New(rand.NewSource(RAND_SEED))
 	g := newRandomGeneralGraph(100, true, 0.1, 0.01, 100, r)
+	rg := g.ResidualGraph()
 	fmt.Println(g.NumEdges)
+	fmt.Println(rg.NumVertices)
 }
