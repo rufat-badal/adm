@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func randCapacity(maxCapacity int, r *rand.Rand) func() int {
+func randCapacity(low int, high int, r *rand.Rand) func() int {
 	return func() int {
-		return r.Intn(maxCapacity) + 1
+		return r.Intn(high-low) + low
 	}
 }
 
@@ -39,7 +39,7 @@ func newRandomGeneralGraph(
 	// This function generates much more general graphs with possibly duplicate edges and bi-directional
 	// edges for directed graphs
 	g := newEmptyGraph(nvertices, directed)
-	rcap := randCapacity(maxCapacity, r)
+	rcap := randCapacity(1, maxCapacity+1, r)
 	for tail := 0; tail < nvertices; tail++ {
 		for head := 0; head < nvertices; head++ {
 			if tail == head {
