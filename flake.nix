@@ -18,8 +18,9 @@
             go
             gopls
           ];
-          # shellHook = ''
-          # '';
+          shellHook = ''
+            $SHELL
+          '';
         }; 
   };
 }
