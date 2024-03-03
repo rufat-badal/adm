@@ -16,13 +16,13 @@ type VertexPair struct {
 }
 
 type ResidualGraph struct {
-	Edges            [][]ResidualEdge
-	vertexPairToEdge map[VertexPair]*ResidualEdge
-	NumVertices      int
+	Edges              [][]ResidualEdge
+	vertexPairToEdgeId map[VertexPair]int
+	NumVertices        int
 }
 
 func newEmptyResidualGraph(nvertices int) ResidualGraph {
-	return ResidualGraph{make([][]ResidualEdge, nvertices), make(map[VertexPair]*ResidualEdge), nvertices}
+	return ResidualGraph{make([][]ResidualEdge, nvertices), make(map[VertexPair]int), nvertices}
 }
 
 func (g Graph) ResidualGraph() ResidualGraph {
@@ -33,18 +33,19 @@ func (g Graph) ResidualGraph() ResidualGraph {
 			head := e.Head
 			capacity := e.Weight
 			forwardPair := VertexPair{tail, head}
-			re, ok := rg.vertexPairToEdge[forwardPair]
+			id, ok := rg.vertexPairToEdgeId[forwardPair]
 			if ok {
+				re := &rg.Edges[tail][id]
 				// an edge between tail and head was already encountered
 				re.Residual += capacity
 			} else {
 				// add forward residual edge
 				rg.Edges[tail] = append(rg.Edges[tail], ResidualEdge{Head: head, Flow: 0, Residual: capacity})
-				rg.vertexPairToEdge[forwardPair] = &rg.Edges[tail][len(rg.Edges[tail])-1]
+				rg.vertexPairToEdgeId[forwardPair] = len(rg.Edges[tail]) - 1
 				// add backward residual edge
 				rg.Edges[head] = append(rg.Edges[head], ResidualEdge{Head: tail, Flow: 0, Residual: 0})
 				backwardPair := VertexPair{head, tail}
-				rg.vertexPairToEdge[backwardPair] = &rg.Edges[head][len(rg.Edges[head])-1]
+				rg.vertexPairToEdgeId[backwardPair] = len(rg.Edges[head]) - 1
 			}
 		}
 	}
@@ -82,7 +83,9 @@ func (rg ResidualGraph) BFS(start int) []int {
 }
 
 func (rg ResidualGraph) FindEdge(tail, head int) *ResidualEdge {
-	return rg.vertexPairToEdge[VertexPair{tail, head}]
+	// once we decide to also remove residual edges this map needs to be updated!
+	id := rg.vertexPairToEdgeId[VertexPair{tail, head}]
+	return &rg.Edges[tail][id]
 }
 
 func (rg ResidualGraph) pathVolume(parent []int, start int, end int) int {

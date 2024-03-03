@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -66,6 +65,12 @@ func (g *Graph) addPathEdges(tail int, head int, rcap func() int, dprob float64,
 	return totalc
 }
 
+func (g *Graph) expand(nverts int) {
+	g.Edges = append(g.Edges, make([][]Edge, nverts)...)
+	g.Degree = append(g.Degree, make([]int, nverts)...)
+	g.NumVertices += nverts
+}
+
 func (g *Graph) addPath(
 	nedges int,
 	source int,
@@ -83,9 +88,7 @@ func (g *Graph) addPath(
 	}
 
 	nextv := g.NumVertices
-	g.Edges = append(g.Edges, make([][]Edge, nedges-1)...)
-	g.Degree = append(g.Degree, make([]int, nedges-1)...)
-	g.NumVertices += nedges - 1
+	g.expand(nedges - 1)
 	head = nextv
 	nextv++
 	pathc = g.addPathEdges(tail, head, rcap, dprob, r)
@@ -108,28 +111,43 @@ func (g *Graph) addPath(
 	return pathc
 }
 
+func (g *Graph) addExtraVerticesAndEdges(nverts int, eprob float64, dprob float64, r *rand.Rand, rcap func() int) {
+	oldNumVerts := g.NumVertices
+	g.expand(nverts)
+	for tail := 0; tail < g.NumVertices; tail++ {
+		for head := 0; head < g.NumVertices; head++ {
+			if tail == head || head < oldNumVerts {
+				continue
+			}
+			if r.Float64() < eprob {
+				g.AddEdge(tail, head, rcap())
+				for r.Float64() < dprob {
+					g.AddEdge(tail, head, rcap())
+				}
+			}
+		}
+	}
+}
+
 func TestMaxFlow(t *testing.T) {
 	const pathLen = 100
-	const lowCap = 100
-	const highCap = 10000
+	const lowCap = 1
+	const highCap = 1001
 	const dprob = 0.05
-	const npaths = 10
+	const npaths = 100
 	const source = 0
 	const sink = 1
+	const eprob = 0.1
+	const nextraVerts = 1000
 
 	r := rand.New(rand.NewSource(RAND_SEED))
 	g := newEmptyGraph(2, true)
 	maxflowShould := 0
-	minCap := MAXINT
-	var pathCap int
+	rcap := randCapacity(lowCap, highCap, r)
 	for i := 0; i < npaths; i++ {
-		pathCap = g.addPath(pathLen, source, sink, randCapacity(lowCap, highCap, r), dprob, r)
-		maxflowShould += pathCap
-		if pathCap < minCap {
-			minCap = pathCap
-		}
+		maxflowShould += g.addPath(pathLen, source, sink, rcap, dprob, r)
 	}
-	fmt.Println(minCap)
+	g.addExtraVerticesAndEdges(nextraVerts, eprob, dprob, r, rcap)
 	maxflow := g.MaxFlow(source, sink)
 	if maxflow != maxflowShould {
 		t.Errorf("wrong max flow %v computed (should be %v)", maxflow, maxflowShould)
