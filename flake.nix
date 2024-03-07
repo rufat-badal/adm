@@ -3,21 +3,20 @@
 
   inputs = {
       nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, flake-utils }:
+  flake-utils.lib.eachDefaultSystem (system:
   let
-      system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
   in
   {
-    devShells.${system}.default =
-      pkgs.mkShell
-        {
-          buildInputs = with pkgs; [
-            go
-            gopls
-          ];
-        };
-  };
+    devShell = pkgs.mkShell {
+      buildInputs = with pkgs; [
+        go
+        gopls
+      ];
+    };
+  });
 }
