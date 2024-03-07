@@ -15,6 +15,7 @@ func generatePerumationsBacktrack(p []int, k int, n int, c chan []int) {
 		if lastPerm {
 			close(c)
 		}
+		return
 	}
 
 	inPerm := make([]bool, n)
