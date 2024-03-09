@@ -10,8 +10,8 @@ const SUDOKU_BLOCK_SIZE = SUDOKU_SIZE / 3
 const SUDOKU_FIELDS = SUDOKU_SIZE * SUDOKU_SIZE
 
 type Sudoku struct {
-	field   [SUDOKU_FIELDS]int // row major
-	ncovers [SUDOKU_FIELDS][SUDOKU_SIZE]int
+	field   []int // row major
+	ncovers [][]int
 }
 
 type SudokuSquare struct {
@@ -20,7 +20,7 @@ type SudokuSquare struct {
 	Col int // column index starts at 1
 }
 
-func (sq *SudokuSquare) fieldIndex() int {
+func (sq SudokuSquare) fieldIndex() int {
 	return (sq.Row-1)*SUDOKU_SIZE + sq.Col - 1
 }
 
@@ -32,14 +32,19 @@ func newSudokuSquare(i int) SudokuSquare {
 }
 
 func NewEmptySudoku() Sudoku {
-	s := Sudoku{}
-	for i := range s.field {
-		s.field[i] = -1
+	field := make([]int, SUDOKU_FIELDS)
+	for i := range field {
+		field[i] = -1
 	}
+	ncovers := make([][]int, SUDOKU_FIELDS)
+	for i := range ncovers {
+		ncovers[i] = make([]int, SUDOKU_SIZE)
+	}
+	s := Sudoku{field, ncovers}
 	return s
 }
 
-func (su *Sudoku) Allowed(sq SudokuSquare, val int) bool {
+func (su Sudoku) Allowed(sq SudokuSquare, val int) bool {
 	return su.ncovers[sq.fieldIndex()][val-1] == 0
 }
 
@@ -116,28 +121,28 @@ func (su *Sudoku) UnmakeMove(sq SudokuSquare) error {
 }
 
 func NewSudoku(field [SUDOKU_FIELDS]int) Sudoku {
-	s := NewEmptySudoku()
+	su := NewEmptySudoku()
 	for i, val := range field {
 		if val == -1 {
 			continue
 		}
 		sq := newSudokuSquare(i)
-		s.MakeMove(sq, val)
+		su.MakeMove(sq, val)
 	}
-	return s
+	return su
 }
 
-func (s Sudoku) ValueAt(sq SudokuSquare) int {
+func (su Sudoku) ValueAt(sq SudokuSquare) int {
 	i := sq.fieldIndex()
 	if i < 0 || i >= SUDOKU_FIELDS {
 		return -1
 	}
-	return s.field[i]
+	return su.field[i]
 }
 
 func (su Sudoku) String() string {
 	s := ""
-	var rowStrings [SUDOKU_SIZE]string
+	rowStrings := make([]string, SUDOKU_SIZE)
 	for row := 1; row < 10; row++ {
 		for col := 1; col < 10; col++ {
 			rowStrings[col-1] = fmt.Sprintf("%2v", su.ValueAt(SudokuSquare{row, col}))
