@@ -10,8 +10,9 @@ const SUDOKU_BLOCK_SIZE = SUDOKU_SIZE / 3
 const SUDOKU_FIELDS = SUDOKU_SIZE * SUDOKU_SIZE
 
 type Sudoku struct {
-	field   []int // row major
-	ncovers [][]int
+	field       []int // row major
+	ncovers     [][]int
+	NFreeFields int
 }
 
 type SudokuSquare struct {
@@ -40,7 +41,7 @@ func NewEmptySudoku() Sudoku {
 	for i := range ncovers {
 		ncovers[i] = make([]int, SUDOKU_SIZE)
 	}
-	s := Sudoku{field, ncovers}
+	s := Sudoku{field, ncovers, SUDOKU_FIELDS}
 	return s
 }
 
@@ -75,11 +76,13 @@ func (su *Sudoku) updateNcovers(sq SudokuSquare, val, delta int) {
 func (su *Sudoku) makeMove(sq SudokuSquare, val int) {
 	su.field[sq.fieldIndex()] = val
 	su.updateNcovers(sq, val, 1)
+	su.NFreeFields--
 }
 
 func (su *Sudoku) unmakeMove(sq SudokuSquare, oldVal int) {
 	su.field[sq.fieldIndex()] = -1
 	su.updateNcovers(sq, oldVal, -1)
+	su.NFreeFields++
 }
 
 func checkSquare(sq SudokuSquare) error {
