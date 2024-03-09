@@ -150,7 +150,57 @@ func (su Sudoku) String() string {
 		for col := 1; col < 10; col++ {
 			rowStrings[col-1] = fmt.Sprintf("%2v", su.ValueAt(SudokuSquare{row, col}))
 		}
-		s = s + strings.Join(rowStrings[:], " ") + "\n"
+		s = s + strings.Join(rowStrings[:], " ")
+		if row != 9 {
+			s = s + "\n"
+		}
 	}
 	return s
+}
+
+func nextSquare(su Sudoku) SudokuSquare {
+	// we assume that su is not fully filled
+	nposs := make([]int, SUDOKU_FIELDS)
+	for i := range nposs {
+		if su.field[i] != -1 {
+			continue
+		}
+		for _, n := range su.ncovers[i] {
+			if n == 0 {
+				nposs[i]++
+			}
+		}
+	}
+
+	var min int
+	for i, n := range nposs {
+		if n > 0 {
+			min = i
+			break
+		}
+	}
+	for i := min + 1; i < len(nposs); i++ {
+		if nposs[i] == 0 {
+			continue
+		}
+		if nposs[i] < nposs[min] {
+			min = i
+		}
+	}
+	return newSudokuSquare(min)
+}
+
+func backtrackSudoku(moves []SudokuSquare, values []int, k int, su *Sudoku) {
+	if su.NFreeFields == 0 {
+		return
+	}
+
+	sq := nextSquare(*su)
+	fmt.Println(sq)
+}
+
+func (su *Sudoku) Solve() {
+	moves := make([]SudokuSquare, su.NFreeFields)
+	values := make([]int, SUDOKU_SIZE)
+	backtrackSudoku(moves, values, 0, su)
 }

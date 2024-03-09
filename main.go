@@ -19,8 +19,5 @@ func main() {
 		-1, 6, 5, 9, -1, -1, 3, -1, 4,
 	})
 	fmt.Println(su)
-	fmt.Println(su.NFreeFields)
-	su.MakeMove(combinatorics.SudokuSquare{Row: 2, Col: 3}, 2)
-	fmt.Println(su)
-	fmt.Println(su.NFreeFields)
+	su.Solve()
 }
