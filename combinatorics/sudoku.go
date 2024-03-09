@@ -14,11 +14,21 @@ type Sudoku struct {
 	ncovers [SUDOKU_FIELDS][SUDOKU_SIZE]int
 }
 
-type SudokuMove struct {
+type SudokuSquare struct {
 	// 1, 1 are the coordinates of the top left corner
 	Row int // row index starts at 1
 	Col int // column index starts at 1
-	Val int
+}
+
+func (sq *SudokuSquare) fieldIndex() int {
+	return (sq.Row-1)*SUDOKU_SIZE + sq.Col - 1
+}
+
+func newSudokuSquare(i int) SudokuSquare {
+	row := i / SUDOKU_SIZE
+	col := i - row*SUDOKU_SIZE
+	return SudokuSquare{row + 1, col + 1}
+
 }
 
 func NewEmptySudoku() Sudoku {
@@ -29,32 +39,21 @@ func NewEmptySudoku() Sudoku {
 	return s
 }
 
-func sudokuField(row, col int) int {
-	return (row-1)*SUDOKU_SIZE + col - 1
+func (su *Sudoku) Allowed(sq SudokuSquare, val int) bool {
+	return su.ncovers[sq.fieldIndex()][val-1] == 0
 }
 
-func sudokuRowCol(i int) (int, int) {
-	row := i / SUDOKU_SIZE
-	col := i - row*SUDOKU_SIZE
-	return row + 1, col + 1
-}
-
-func (su *Sudoku) Allowed(mv SudokuMove) bool {
-	return su.ncovers[sudokuField(mv.Row, mv.Col)][mv.Val-1] == 0
-}
-
-func (su *Sudoku) makeMove(mv SudokuMove) {
-	su.field[sudokuField(mv.Row, mv.Col)] = mv.Val
-	row := mv.Row - 1
-	col := mv.Col - 1
-	v := mv.Val - 1
+func (su *Sudoku) updateNcovers(sq SudokuSquare, val, delta int) {
+	row := sq.Row - 1
+	col := sq.Col - 1
+	v := val - 1
 	// update row
 	for j := 0; j < SUDOKU_SIZE; j++ {
-		su.ncovers[row*SUDOKU_SIZE+j][v]++
+		su.ncovers[row*SUDOKU_SIZE+j][v] += delta
 	}
 	// update column
 	for j := 0; j < SUDOKU_SIZE; j++ {
-		su.ncovers[j*SUDOKU_SIZE+col][v]++
+		su.ncovers[j*SUDOKU_SIZE+col][v] += delta
 	}
 	// update block
 	blockRow := row / SUDOKU_BLOCK_SIZE
@@ -63,25 +62,56 @@ func (su *Sudoku) makeMove(mv SudokuMove) {
 		for k := 0; k < SUDOKU_BLOCK_SIZE; k++ {
 			r := blockRow*SUDOKU_BLOCK_SIZE + j
 			c := blockCol*SUDOKU_BLOCK_SIZE + k
-			su.ncovers[r*SUDOKU_SIZE+c][v]++
+			su.ncovers[r*SUDOKU_SIZE+c][v] += delta
 		}
 	}
 }
 
-func (su *Sudoku) MakeMove(mv SudokuMove) error {
-	if mv.Val < 1 || mv.Val > 9 {
-		return fmt.Errorf("invalid value %v for square at (%v, %v) provided (should be between 1 and 9)", mv.Val, mv.Row, mv.Col)
+func (su *Sudoku) makeMove(sq SudokuSquare, val int) {
+	su.field[sq.fieldIndex()] = val
+	su.updateNcovers(sq, val, 1)
+}
+
+func (su *Sudoku) unmakeMove(sq SudokuSquare, oldVal int) {
+	su.field[sq.fieldIndex()] = -1
+	su.updateNcovers(sq, oldVal, -1)
+}
+
+func checkSquare(sq SudokuSquare) error {
+	if sq.Row < 1 || sq.Row > 9 {
+		return fmt.Errorf("invalid row %v (should be between 1 and 9)", sq.Row)
 	}
-	if mv.Row < 1 || mv.Row > 9 {
-		return fmt.Errorf("invalid row index %v (should be between 1 and 9)", mv.Row)
+	if sq.Col < 1 || sq.Col > 9 {
+		return fmt.Errorf("invalid column %v (should be between 1 and 9)", sq.Col)
 	}
-	if mv.Col < 1 || mv.Col > 9 {
-		return fmt.Errorf("invalid column index %v (should be between 1 and 9)", mv.Col)
+	return nil
+}
+
+func (su *Sudoku) MakeMove(sq SudokuSquare, val int) error {
+	if val < 1 || val > 9 {
+		return fmt.Errorf("invalid value %v (should be between 1 and 9)", val)
 	}
-	if !su.Allowed(mv) {
-		return fmt.Errorf("value %v is not allowed at (%v, %v)", mv.Val, mv.Row, mv.Col)
+	e := checkSquare(sq)
+	if e != nil {
+		return e
 	}
-	su.makeMove(mv)
+	if !su.Allowed(sq, val) {
+		return fmt.Errorf("value %v is not allowed at (%v, %v)", val, sq.Row, sq.Col)
+	}
+	su.makeMove(sq, val)
+	return nil
+}
+
+func (su *Sudoku) UnmakeMove(sq SudokuSquare) error {
+	e := checkSquare(sq)
+	if e != nil {
+		return e
+	}
+	oldVal := su.ValueAt(sq)
+	if oldVal == -1 {
+		return nil
+	}
+	su.unmakeMove(sq, oldVal)
 	return nil
 }
 
@@ -91,14 +121,14 @@ func NewSudoku(field [SUDOKU_FIELDS]int) Sudoku {
 		if val == -1 {
 			continue
 		}
-		row, col := sudokuRowCol(i)
-		s.MakeMove(SudokuMove{row, col, val})
+		sq := newSudokuSquare(i)
+		s.MakeMove(sq, val)
 	}
 	return s
 }
 
-func (s Sudoku) ValueAt(row, col int) int {
-	i := sudokuField(row, col)
+func (s Sudoku) ValueAt(sq SudokuSquare) int {
+	i := sq.fieldIndex()
 	if i < 0 || i >= SUDOKU_FIELDS {
 		return -1
 	}
@@ -110,7 +140,7 @@ func (su Sudoku) String() string {
 	var rowStrings [SUDOKU_SIZE]string
 	for row := 1; row < 10; row++ {
 		for col := 1; col < 10; col++ {
-			rowStrings[col-1] = fmt.Sprintf("%2v", su.ValueAt(row, col))
+			rowStrings[col-1] = fmt.Sprintf("%2v", su.ValueAt(SudokuSquare{row, col}))
 		}
 		s = s + strings.Join(rowStrings[:], " ") + "\n"
 	}

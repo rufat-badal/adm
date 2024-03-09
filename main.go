@@ -19,8 +19,19 @@ func main() {
 		-1, 6, 5, 9, -1, -1, 3, -1, 4,
 	})
 	fmt.Println(su)
-	e := su.MakeMove(combinatorics.SudokuMove{Row: 2, Col: 3, Val: 3})
+	e := su.MakeMove(combinatorics.SudokuSquare{Row: 2, Col: 3}, 3)
 	if e != nil {
 		fmt.Println(e)
 	}
+	fmt.Println(su)
+	e = su.UnmakeMove(combinatorics.SudokuSquare{Row: 3, Col: 2})
+	if e != nil {
+		fmt.Println(e)
+	}
+	fmt.Println(su)
+	e = su.MakeMove(combinatorics.SudokuSquare{Row: 2, Col: 3}, 3)
+	if e != nil {
+		fmt.Println(e)
+	}
+	fmt.Println(su)
 }
