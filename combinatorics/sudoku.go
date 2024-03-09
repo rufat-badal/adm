@@ -11,47 +11,70 @@ const SUDOKU_FIELDS = SUDOKU_SIZE * SUDOKU_SIZE
 
 type Sudoku struct {
 	field   [SUDOKU_FIELDS]int // row major
-	rows    [SUDOKU_SIZE][SUDOKU_SIZE]bool
-	columns [SUDOKU_SIZE][SUDOKU_SIZE]bool
-	blocks  [SUDOKU_SIZE][SUDOKU_SIZE]bool
+	allowed [SUDOKU_FIELDS][SUDOKU_SIZE]bool
 }
 
 func NewEmptySudoku() Sudoku {
 	s := Sudoku{}
-	for i := range s.field {
+	for i := 0; i < SUDOKU_FIELDS; i++ {
 		s.field[i] = -1
+		for j := 0; j < SUDOKU_SIZE; j++ {
+			s.allowed[i][j] = true
+		}
 	}
 	return s
 }
 
-func getSudokuFieldIndex(row, col int) (int, error) {
-	if row < 1 || row > SUDOKU_SIZE {
-		return -1, fmt.Errorf("sudoku square has incorrect row %v (should be between 1 and 9)", row)
+func sudokuField(row, col int) int {
+	return (row-1)*SUDOKU_SIZE + col - 1
+}
+
+func sudokuRowCol(i int) (int, int) {
+	row := i / SUDOKU_SIZE
+	col := i - row*SUDOKU_SIZE
+	return row + 1, col + 1
+}
+
+func (su *Sudoku) setField(i, row, col, v int) {
+	su.field[i] = v
+	row--
+	col--
+	v--
+	// update row
+	for j := 0; j < SUDOKU_SIZE; j++ {
+		su.allowed[row*SUDOKU_SIZE+j][v] = false
 	}
-	if col < 1 || col > SUDOKU_SIZE {
-		return -1, fmt.Errorf("sudoku square has incorrect column %v (should be between 1 and 9)", col)
+	// update column
+	for j := 0; j < SUDOKU_SIZE; j++ {
+		su.allowed[j*SUDOKU_SIZE+col][v] = false
 	}
-	return (row-1)*SUDOKU_SIZE + col - 1, nil
+	// update block
+	blockRow := row / SUDOKU_BLOCK_SIZE
+	blockCol := col / SUDOKU_BLOCK_SIZE
+	for j := 0; j < SUDOKU_BLOCK_SIZE; j++ {
+		for k := 0; k < SUDOKU_BLOCK_SIZE; k++ {
+			r := blockRow*SUDOKU_BLOCK_SIZE + j
+			c := blockCol*SUDOKU_BLOCK_SIZE + k
+			su.allowed[r*SUDOKU_SIZE+c][v] = false
+		}
+	}
 }
 
 func (su *Sudoku) FillSquare(sq SudokuSquare) error {
 	if sq.Val < 1 || sq.Val > 9 {
 		return fmt.Errorf("invalid value %v for square at (%v, %v) provided (should be between 1 and 9)", sq.Val, sq.Row, sq.Col)
 	}
-	i, e := getSudokuFieldIndex(sq.Row, sq.Col)
-	if e != nil {
-		return e
+	if sq.Row < 1 || sq.Row > 9 {
+		return fmt.Errorf("invalid row index %v (should be between 1 and 9)", sq.Row)
 	}
-	if su.field[i] != -1 {
-		return fmt.Errorf("square at (%v, %v) is already filled with %v, cannot fill it with %v a second time", sq.Col, sq.Row, su.field[i], sq.Val)
+	if sq.Col < 1 || sq.Col > 9 {
+		return fmt.Errorf("invalid column index %v (should be between 1 and 9)", sq.Col)
 	}
-	su.field[i] = sq.Val
-	r, c, v := sq.Row-1, sq.Col-1, sq.Val-1
-	su.rows[r][v] = true
-	su.columns[c][v] = true
-
-	b := (r/SUDOKU_BLOCK_SIZE)*SUDOKU_BLOCK_SIZE + c/SUDOKU_BLOCK_SIZE
-	su.blocks[b][v] = true
+	i := sudokuField(sq.Row, sq.Col)
+	if !su.allowed[i][sq.Val-1] {
+		return fmt.Errorf("value %v is not allowed at (%v, %v)", sq.Val, sq.Row, sq.Col)
+	}
+	su.setField(i, sq.Row, sq.Col, sq.Val)
 	return nil
 }
 
@@ -68,15 +91,18 @@ func NewSudoku(field [SUDOKU_FIELDS]int) Sudoku {
 		if val == -1 {
 			continue
 		}
-		row := i / SUDOKU_SIZE
-		col := i - row*SUDOKU_SIZE
-		s.FillSquare(SudokuSquare{Row: row + 1, Col: col + 1, Val: val})
+		row, col := sudokuRowCol(i)
+		s.FillSquare(SudokuSquare{row, col, val})
 	}
 	return s
 }
 
 func (s Sudoku) ValueAt(row, col int) int {
-	return s.field[(row-1)*SUDOKU_SIZE+col-1]
+	i := sudokuField(row, col)
+	if i < 0 || i >= SUDOKU_FIELDS {
+		return -1
+	}
+	return s.field[i]
 }
 
 func (su Sudoku) String() string {
