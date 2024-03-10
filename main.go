@@ -20,4 +20,6 @@ func main() {
 	})
 	fmt.Println(su)
 	su.Solve()
+	fmt.Println()
+	fmt.Println(su)
 }

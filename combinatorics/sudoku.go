@@ -190,17 +190,33 @@ func nextSquare(su Sudoku) SudokuSquare {
 	return newSudokuSquare(min)
 }
 
-func backtrackSudoku(moves []SudokuSquare, values []int, k int, su *Sudoku) {
+func candidateValues(su Sudoku, sq SudokuSquare) []int {
+	var vals []int
+	for val, count := range su.ncovers[sq.fieldIndex()] {
+		if count == 0 {
+			vals = append(vals, val+1)
+		}
+	}
+	return vals
+}
+
+func backtrackSudoku(su *Sudoku) {
 	if su.NFreeFields == 0 {
 		return
 	}
 
 	sq := nextSquare(*su)
-	fmt.Println(sq)
+	vals := candidateValues(*su, sq)
+	for _, val := range vals {
+		su.MakeMove(sq, val)
+		backtrackSudoku(su)
+		if su.NFreeFields == 0 {
+			return
+		}
+		su.UnmakeMove(sq)
+	}
 }
 
 func (su *Sudoku) Solve() {
-	moves := make([]SudokuSquare, su.NFreeFields)
-	values := make([]int, SUDOKU_SIZE)
-	backtrackSudoku(moves, values, 0, su)
+	backtrackSudoku(su)
 }
