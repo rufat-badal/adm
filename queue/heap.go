@@ -27,6 +27,7 @@ type heapContainerInterface[T interface{}] interface {
 	Swap(int, int)
 	Append(it HeapItem[T]) heapContainerInterface[T]
 	Pop() heapContainerInterface[T]
+	SetWeight(int, int)
 }
 
 type heapContainerSimple[T interface{}] struct {
@@ -51,6 +52,10 @@ func (hc heapContainerSimple[T]) Append(it HeapItem[T]) heapContainerInterface[T
 
 func (hc heapContainerSimple[T]) Pop() heapContainerInterface[T] {
 	return heapContainerSimple[T]{hc.data[:len(hc.data)-1]}
+}
+
+func (hc heapContainerSimple[T]) SetWeight(i, newWeight int) {
+	hc.data[i].Weight = newWeight
 }
 
 type MinHeapSimple[T interface{}] struct {
@@ -167,20 +172,60 @@ func (hc heapContainer[T]) Pop() heapContainerInterface[T] {
 	return heapContainer[T]{hc.data[:len(hc.data)-1], hc.indexOf}
 }
 
-type MinHeapNew[T comparable] struct {
-	h       MinHeapSimple[T]
-	indexOf *map[T]int
+func (hc heapContainer[T]) SetWeight(i, newWeight int) {
+	hc.data[i].Weight = newWeight
 }
 
-func NewMinHeapNew[T comparable](items []HeapItem[T]) MinHeapNew[T] {
+type MinHeapV2[T comparable] struct {
+	hs      MinHeapSimple[T]
+	indexOf map[T]int
+}
+
+func NewMinHeapV2[T comparable](items []HeapItem[T]) MinHeapV2[T] {
 	// No copy of items is made!
 	indexOf := make(map[T]int)
 	for i, it := range items {
 		indexOf[it.Value] = i
 	}
 	hc := heapContainer[T]{items, indexOf}
-	h := newMinHeapFromContainer[T](hc)
-	return MinHeapNew[T]{h, &hc.indexOf}
+	hs := newMinHeapFromContainer[T](hc)
+	return MinHeapV2[T]{hs, hc.indexOf}
+}
+
+func (h MinHeapV2[T]) Len() int {
+	return h.hs.Len()
+}
+
+func (h *MinHeapV2[T]) Insert(it HeapItem[T]) {
+	h.hs.Insert(it)
+}
+
+func (h MinHeapV2[T]) String() string {
+	return h.hs.String()
+}
+
+func (h MinHeapV2[T]) IsEmpty() bool {
+	return h.hs.IsEmpty()
+}
+
+func (h *MinHeapV2[T]) ExtractMin() (HeapItem[T], error) {
+	return h.hs.ExtractMin()
+}
+
+func (h *MinHeapV2[T]) DecreaseWeight(value T, newWeight int) int {
+	// DecreaseWeight does nothing if no item with value 'value' is present or the newWeight is larger or equal
+	i, ok := h.indexOf[value]
+	if !ok {
+		return -1
+	}
+	it := h.hs.cnt.Get(i)
+	if it.Weight <= newWeight {
+		return it.Weight
+	}
+	oldWeight := it.Weight
+	h.hs.cnt.SetWeight(i, newWeight)
+	bubbleUp(h.hs.cnt, i)
+	return oldWeight
 }
 
 type MinHeap[T comparable] struct {
