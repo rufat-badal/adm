@@ -21,13 +21,13 @@ type HeapItem[T interface{}] struct {
 	Weight int
 }
 
-type queueContainer[T interface{}] interface {
+type heapContainerInterface[T interface{}] interface {
 	Len() int
 	Get(int) HeapItem[T]
 	Set(int, HeapItem[T])
 	Swap(int, int)
-	Append(it HeapItem[T]) queueContainer[T]
-	Pop() queueContainer[T]
+	Append(it HeapItem[T]) heapContainerInterface[T]
+	Pop() heapContainerInterface[T]
 }
 
 type heapContainerSimple[T interface{}] struct {
@@ -50,19 +50,19 @@ func (hc heapContainerSimple[T]) Len() int {
 	return len(hc.data)
 }
 
-func (hc heapContainerSimple[T]) Append(it HeapItem[T]) queueContainer[T] {
+func (hc heapContainerSimple[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
 	return heapContainerSimple[T]{append(hc.data, it)}
 }
 
-func (hc heapContainerSimple[T]) Pop() queueContainer[T] {
+func (hc heapContainerSimple[T]) Pop() heapContainerInterface[T] {
 	return heapContainerSimple[T]{hc.data[:len(hc.data)-1]}
 }
 
 type MinHeapSimple[T interface{}] struct {
-	cnt queueContainer[T]
+	cnt heapContainerInterface[T]
 }
 
-func bubbleDown[T interface{}](cnt queueContainer[T], from int) {
+func bubbleDown[T interface{}](cnt heapContainerInterface[T], from int) {
 	min := from
 	cid := FirstChild(from)
 	// Find index of the node of minimal weight in the family of the node at p
@@ -81,7 +81,7 @@ func bubbleDown[T interface{}](cnt queueContainer[T], from int) {
 	bubbleDown[T](cnt, min)
 }
 
-func bubbleUp[T interface{}](cnt queueContainer[T], from int) {
+func bubbleUp[T interface{}](cnt heapContainerInterface[T], from int) {
 	pid := Parent(from)
 	if pid == -1 {
 		return
