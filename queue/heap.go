@@ -24,7 +24,6 @@ type HeapItem[T interface{}] struct {
 type heapContainerInterface[T interface{}] interface {
 	Len() int
 	Get(int) HeapItem[T]
-	Set(int, HeapItem[T])
 	Swap(int, int)
 	Append(it HeapItem[T]) heapContainerInterface[T]
 	Pop() heapContainerInterface[T]
@@ -36,10 +35,6 @@ type heapContainerSimple[T interface{}] struct {
 
 func (hc heapContainerSimple[T]) Get(i int) HeapItem[T] {
 	return hc.data[i]
-}
-
-func (hc heapContainerSimple[T]) Set(i int, it HeapItem[T]) {
-	hc.data[i] = it
 }
 
 func (hc heapContainerSimple[T]) Swap(i, j int) {
@@ -94,12 +89,16 @@ func bubbleUp[T interface{}](cnt heapContainerInterface[T], from int) {
 	bubbleUp(cnt, pid)
 }
 
+func newMinHeapFromContainer[T interface{}](cnt heapContainerInterface[T]) MinHeapSimple[T] {
+	for i := cnt.Len()/2 - 1; i >= 0; i-- {
+		bubbleDown[T](cnt, i)
+	}
+	return MinHeapSimple[T]{cnt}
+}
+
 func NewMinHeapSimple[T interface{}](items []HeapItem[T]) MinHeapSimple[T] {
 	hc := heapContainerSimple[T]{items}
-	for i := len(items)/2 - 1; i >= 0; i-- {
-		bubbleDown[T](hc, i)
-	}
-	return MinHeapSimple[T]{hc}
+	return newMinHeapFromContainer[T](hc)
 }
 
 func (h MinHeapSimple[T]) Len() int {
@@ -128,13 +127,60 @@ func (h *MinHeapSimple[T]) ExtractMin() (HeapItem[T], error) {
 		return *new(HeapItem[T]), errors.New("cannot extract minimum from an empty heap")
 	}
 	min := h.cnt.Get(0)
-	last := h.cnt.Get(h.cnt.Len() - 1)
-	h.cnt.Set(0, last)
+	h.cnt.Swap(0, h.cnt.Len()-1)
 	h.cnt = h.cnt.Pop()
 	if h.Len() > 1 {
 		bubbleDown(h.cnt, 0)
 	}
 	return min, nil
+}
+
+type heapContainer[T comparable] struct {
+	data    []HeapItem[T]
+	indexOf map[T]int
+}
+
+func (hc heapContainer[T]) Get(i int) HeapItem[T] {
+	return hc.data[i]
+}
+
+func (hc heapContainer[T]) Swap(i, j int) {
+	x, y := hc.data[i], hc.data[j]
+	hc.data[i], hc.data[j] = y, x
+	hc.indexOf[x.Value], hc.indexOf[y.Value] = j, i
+}
+
+func (hc heapContainer[T]) Len() int {
+	return len(hc.data)
+}
+
+func (hc heapContainer[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
+	newIndexOf := hc.indexOf
+	newIndexOf[it.Value] = hc.Len()
+	newData := append(hc.data, it)
+	return heapContainer[T]{newData, newIndexOf}
+}
+
+func (hc heapContainer[T]) Pop() heapContainerInterface[T] {
+	last := hc.data[len(hc.data)-1]
+	delete(hc.indexOf, last.Value)
+	return heapContainer[T]{hc.data[:len(hc.data)-1], hc.indexOf}
+}
+
+type MinHeapNew[T comparable] struct {
+	h       MinHeapSimple[T]
+	indexOf *map[T]int
+}
+
+func NewMinHeapNew[T comparable](items []HeapItem[T]) MinHeapNew[T] {
+	// No copy of items is made!
+	indexOf := make(map[T]int)
+	for i, it := range items {
+		indexOf[it.Value] = i
+	}
+	hc := heapContainer[T]{items, indexOf}
+	h := newMinHeapFromContainer[T](hc)
+	return MinHeapNew[T]{h, &hc.indexOf}
 }
 
 type MinHeap[T comparable] struct {
