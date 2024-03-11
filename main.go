@@ -13,9 +13,11 @@ func main() {
 	// fmt.Println(graph.TravelingSalesman(g))
 	items := make([]queue.HeapItem[[]int], 3)
 	items[0] = queue.HeapItem[[]int]{Value: []int{1, 2, 3}, Weight: 10}
-	items[1] = queue.HeapItem[[]int]{Value: []int{2, 3}, Weight: 1}
+	items[1] = queue.HeapItem[[]int]{Value: []int{2, 3}, Weight: 4}
 	items[2] = queue.HeapItem[[]int]{Value: []int{2, 3, 42}, Weight: 5}
 	fmt.Println(items)
 	q := queue.NewMinHeapSimple[[]int](items)
+	fmt.Println(q)
+	q.Insert(queue.HeapItem[[]int]{Value: []int{35, 36}, Weight: 2})
 	fmt.Println(q)
 }

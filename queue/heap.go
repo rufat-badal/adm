@@ -5,9 +5,27 @@ import (
 	"fmt"
 )
 
+func Parent(i int) int {
+	if i == 0 {
+		return -1
+	}
+	return (i - 1) / 2
+}
+
+func FirstChild(i int) int {
+	return 2*i + 1
+}
+
 type HeapItem[T interface{}] struct {
 	Value  T
 	Weight int
+}
+
+type queueContainer[T interface{}] interface {
+	len() int
+	get(int) HeapItem[T]
+	swap(int, int)
+	append(it HeapItem[T]) queueContainer[T]
 }
 
 type heapContainerSimple[T interface{}] struct {
@@ -26,41 +44,61 @@ func (hc heapContainerSimple[T]) len() int {
 	return len(hc.data)
 }
 
-type lenGetSwaper[T interface{}] interface {
-	len() int
-	get(int) HeapItem[T]
-	swap(int, int)
+func (hc heapContainerSimple[T]) append(it HeapItem[T]) queueContainer[T] {
+	return heapContainerSimple[T]{append(hc.data, it)}
 }
 
 type MinHeapSimple[T interface{}] struct {
-	items lenGetSwaper[T]
+	cnt queueContainer[T]
 }
 
-func bubbleDown[T interface{}](c lenGetSwaper[T], from int) {
+func bubbleDown[T interface{}](cnt queueContainer[T], from int) {
 	min := from
 	cid := FirstChild(from)
 	// Find index of the node of minimal weight in the family of the node at p
 	for i := 0; i < 2; i++ {
-		if (cid + i) >= c.len() {
+		if (cid + i) >= cnt.len() {
 			break
 		}
-		if c.get(cid+i).Weight < c.get(min).Weight {
+		if cnt.get(cid+i).Weight < cnt.get(min).Weight {
 			min = cid + i
 		}
 	}
 	if min == from {
 		return
 	}
-	c.swap(from, min)
-	bubbleDown(c, min)
+	cnt.swap(from, min)
+	bubbleDown[T](cnt, min)
+}
+
+func bubbleUp[T interface{}](cnt queueContainer[T], from int) {
+	pid := Parent(from)
+	if pid == -1 {
+		return
+	}
+	p, c := cnt.get(pid), cnt.get(from)
+	if p.Weight <= c.Weight {
+		return
+	}
+	cnt.swap(pid, from)
+	bubbleUp(cnt, pid)
 }
 
 func NewMinHeapSimple[T interface{}](items []HeapItem[T]) MinHeapSimple[T] {
 	hc := heapContainerSimple[T]{items}
 	for i := len(items)/2 - 1; i >= 0; i-- {
-		bubbleDown(hc, i)
+		bubbleDown[T](hc, i)
 	}
 	return MinHeapSimple[T]{hc}
+}
+
+func (h MinHeapSimple[T]) Len() int {
+	return h.cnt.len()
+}
+
+func (h *MinHeapSimple[T]) Insert(it HeapItem[T]) {
+	h.cnt = h.cnt.append(it)
+	bubbleUp(h.cnt, h.cnt.len()-1)
 }
 
 type MinHeap[T comparable] struct {
@@ -80,17 +118,6 @@ func NewMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
 		h.bubbleDown(i)
 	}
 	return h
-}
-
-func Parent(i int) int {
-	if i == 0 {
-		return -1
-	}
-	return (i - 1) / 2
-}
-
-func FirstChild(i int) int {
-	return 2*i + 1
 }
 
 func (h MinHeap[T]) Length() int {
