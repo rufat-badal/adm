@@ -101,6 +101,14 @@ func (h *MinHeapSimple[T]) Insert(it HeapItem[T]) {
 	bubbleUp(h.cnt, h.cnt.len()-1)
 }
 
+func (h MinHeapSimple[T]) String() string {
+	stringData := make([]string, h.cnt.len())
+	for i := 0; i < h.cnt.len(); i++ {
+		stringData[i] = fmt.Sprintf("%v", h.cnt.get(i))
+	}
+	return fmt.Sprintf("%v", stringData)
+}
+
 type MinHeap[T comparable] struct {
 	data []HeapItem[T]
 	// All items in the queue must have distinct values!
