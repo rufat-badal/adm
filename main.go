@@ -20,4 +20,6 @@ func main() {
 	fmt.Println(q)
 	q.Insert(queue.HeapItem[[]int]{Value: []int{35, 36}, Weight: 2})
 	fmt.Println(q)
+	fmt.Println(q.ExtractMin())
+	fmt.Println(q)
 }
