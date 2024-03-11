@@ -5,9 +5,62 @@ import (
 	"fmt"
 )
 
-type HeapItem[T comparable] struct {
+type HeapItem[T interface{}] struct {
 	Value  T
 	Weight int
+}
+
+type heapContainerSimple[T interface{}] struct {
+	data []HeapItem[T]
+}
+
+func (hc heapContainerSimple[T]) get(i int) HeapItem[T] {
+	return hc.data[i]
+}
+
+func (hc heapContainerSimple[T]) swap(i, j int) {
+	hc.data[i], hc.data[j] = hc.data[j], hc.data[i]
+}
+
+func (hc heapContainerSimple[T]) len() int {
+	return len(hc.data)
+}
+
+type lenGetSwaper[T interface{}] interface {
+	len() int
+	get(int) HeapItem[T]
+	swap(int, int)
+}
+
+type MinHeapSimple[T interface{}] struct {
+	items lenGetSwaper[T]
+}
+
+func bubbleDown[T interface{}](c lenGetSwaper[T], from int) {
+	min := from
+	cid := FirstChild(from)
+	// Find index of the node of minimal weight in the family of the node at p
+	for i := 0; i < 2; i++ {
+		if (cid + i) >= c.len() {
+			break
+		}
+		if c.get(cid+i).Weight < c.get(min).Weight {
+			min = cid + i
+		}
+	}
+	if min == from {
+		return
+	}
+	c.swap(from, min)
+	bubbleDown(c, min)
+}
+
+func NewMinHeapSimple[T interface{}](items []HeapItem[T]) MinHeapSimple[T] {
+	hc := heapContainerSimple[T]{items}
+	for i := len(items)/2 - 1; i >= 0; i-- {
+		bubbleDown(hc, i)
+	}
+	return MinHeapSimple[T]{hc}
 }
 
 type MinHeap[T comparable] struct {
