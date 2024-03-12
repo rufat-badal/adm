@@ -30,38 +30,6 @@ type heapContainerInterface[T interface{}] interface {
 	SetWeight(int, int)
 }
 
-type heapContainerSimple[T interface{}] struct {
-	data []HeapItem[T]
-}
-
-func (hc heapContainerSimple[T]) Get(i int) HeapItem[T] {
-	return hc.data[i]
-}
-
-func (hc heapContainerSimple[T]) Swap(i, j int) {
-	hc.data[i], hc.data[j] = hc.data[j], hc.data[i]
-}
-
-func (hc heapContainerSimple[T]) Len() int {
-	return len(hc.data)
-}
-
-func (hc heapContainerSimple[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
-	return heapContainerSimple[T]{append(hc.data, it)}
-}
-
-func (hc heapContainerSimple[T]) Pop() heapContainerInterface[T] {
-	return heapContainerSimple[T]{hc.data[:len(hc.data)-1]}
-}
-
-func (hc heapContainerSimple[T]) SetWeight(i, newWeight int) {
-	hc.data[i].Weight = newWeight
-}
-
-type MinHeapSimple[T interface{}] struct {
-	cnt heapContainerInterface[T]
-}
-
 func bubbleDown[T interface{}](cnt heapContainerInterface[T], from int) {
 	min := from
 	cid := FirstChild(from)
@@ -94,28 +62,60 @@ func bubbleUp[T interface{}](cnt heapContainerInterface[T], from int) {
 	bubbleUp(cnt, pid)
 }
 
-func newMinHeapFromContainer[T interface{}](cnt heapContainerInterface[T]) MinHeapSimple[T] {
+type heapContainer[T interface{}] struct {
+	data []HeapItem[T]
+}
+
+func (hc heapContainer[T]) Get(i int) HeapItem[T] {
+	return hc.data[i]
+}
+
+func (hc heapContainer[T]) Swap(i, j int) {
+	hc.data[i], hc.data[j] = hc.data[j], hc.data[i]
+}
+
+func (hc heapContainer[T]) Len() int {
+	return len(hc.data)
+}
+
+func (hc heapContainer[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
+	return heapContainer[T]{append(hc.data, it)}
+}
+
+func (hc heapContainer[T]) Pop() heapContainerInterface[T] {
+	return heapContainer[T]{hc.data[:len(hc.data)-1]}
+}
+
+func (hc heapContainer[T]) SetWeight(i, newWeight int) {
+	hc.data[i].Weight = newWeight
+}
+
+type MinHeap[T interface{}] struct {
+	cnt heapContainerInterface[T]
+}
+
+func newMinHeapFromContainer[T interface{}](cnt heapContainerInterface[T]) MinHeap[T] {
 	for i := cnt.Len()/2 - 1; i >= 0; i-- {
 		bubbleDown[T](cnt, i)
 	}
-	return MinHeapSimple[T]{cnt}
+	return MinHeap[T]{cnt}
 }
 
-func NewMinHeapSimple[T interface{}](items []HeapItem[T]) MinHeapSimple[T] {
-	hc := heapContainerSimple[T]{items}
+func NewMinHeap[T interface{}](items []HeapItem[T]) MinHeap[T] {
+	hc := heapContainer[T]{items}
 	return newMinHeapFromContainer[T](hc)
 }
 
-func (h MinHeapSimple[T]) Len() int {
+func (h MinHeap[T]) Len() int {
 	return h.cnt.Len()
 }
 
-func (h *MinHeapSimple[T]) Insert(it HeapItem[T]) {
+func (h *MinHeap[T]) Insert(it HeapItem[T]) {
 	h.cnt = h.cnt.Append(it)
 	bubbleUp(h.cnt, h.cnt.Len()-1)
 }
 
-func (h MinHeapSimple[T]) String() string {
+func (h MinHeap[T]) String() string {
 	stringData := make([]string, h.cnt.Len())
 	for i := 0; i < h.cnt.Len(); i++ {
 		stringData[i] = fmt.Sprintf("%v", h.cnt.Get(i))
@@ -123,11 +123,11 @@ func (h MinHeapSimple[T]) String() string {
 	return fmt.Sprintf("%v", stringData)
 }
 
-func (h MinHeapSimple[T]) IsEmpty() bool {
+func (h MinHeap[T]) IsEmpty() bool {
 	return h.Len() == 0
 }
 
-func (h *MinHeapSimple[T]) ExtractMin() (HeapItem[T], error) {
+func (h *MinHeap[T]) ExtractMin() (HeapItem[T], error) {
 	if h.IsEmpty() {
 		return *new(HeapItem[T]), errors.New("cannot extract minimum from an empty heap")
 	}
@@ -140,79 +140,79 @@ func (h *MinHeapSimple[T]) ExtractMin() (HeapItem[T], error) {
 	return min, nil
 }
 
-type heapContainer[T comparable] struct {
+type heapContainerByValueAccess[T comparable] struct {
 	data    []HeapItem[T]
 	indexOf map[T]int
 }
 
-func (hc heapContainer[T]) Get(i int) HeapItem[T] {
+func (hc heapContainerByValueAccess[T]) Get(i int) HeapItem[T] {
 	return hc.data[i]
 }
 
-func (hc heapContainer[T]) Swap(i, j int) {
+func (hc heapContainerByValueAccess[T]) Swap(i, j int) {
 	x, y := hc.data[i], hc.data[j]
 	hc.data[i], hc.data[j] = y, x
 	hc.indexOf[x.Value], hc.indexOf[y.Value] = j, i
 }
 
-func (hc heapContainer[T]) Len() int {
+func (hc heapContainerByValueAccess[T]) Len() int {
 	return len(hc.data)
 }
 
-func (hc heapContainer[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
+func (hc heapContainerByValueAccess[T]) Append(it HeapItem[T]) heapContainerInterface[T] {
 	newIndexOf := hc.indexOf
 	newIndexOf[it.Value] = hc.Len()
 	newData := append(hc.data, it)
-	return heapContainer[T]{newData, newIndexOf}
+	return heapContainerByValueAccess[T]{newData, newIndexOf}
 }
 
-func (hc heapContainer[T]) Pop() heapContainerInterface[T] {
+func (hc heapContainerByValueAccess[T]) Pop() heapContainerInterface[T] {
 	last := hc.data[len(hc.data)-1]
 	delete(hc.indexOf, last.Value)
-	return heapContainer[T]{hc.data[:len(hc.data)-1], hc.indexOf}
+	return heapContainerByValueAccess[T]{hc.data[:len(hc.data)-1], hc.indexOf}
 }
 
-func (hc heapContainer[T]) SetWeight(i, newWeight int) {
+func (hc heapContainerByValueAccess[T]) SetWeight(i, newWeight int) {
 	hc.data[i].Weight = newWeight
 }
 
-type MinHeapV2[T comparable] struct {
-	hs      MinHeapSimple[T]
+type MinHeapWithDecreaseWeight[T comparable] struct {
+	hs      MinHeap[T]
 	indexOf map[T]int
 }
 
-func NewMinHeapV2[T comparable](items []HeapItem[T]) MinHeapV2[T] {
+func NewMinHeapWithDecreaseWeight[T comparable](items []HeapItem[T]) MinHeapWithDecreaseWeight[T] {
 	// No copy of items is made!
 	indexOf := make(map[T]int)
 	for i, it := range items {
 		indexOf[it.Value] = i
 	}
-	hc := heapContainer[T]{items, indexOf}
+	hc := heapContainerByValueAccess[T]{items, indexOf}
 	hs := newMinHeapFromContainer[T](hc)
-	return MinHeapV2[T]{hs, hc.indexOf}
+	return MinHeapWithDecreaseWeight[T]{hs, hc.indexOf}
 }
 
-func (h MinHeapV2[T]) Len() int {
+func (h MinHeapWithDecreaseWeight[T]) Len() int {
 	return h.hs.Len()
 }
 
-func (h *MinHeapV2[T]) Insert(it HeapItem[T]) {
+func (h *MinHeapWithDecreaseWeight[T]) Insert(it HeapItem[T]) {
 	h.hs.Insert(it)
 }
 
-func (h MinHeapV2[T]) String() string {
+func (h MinHeapWithDecreaseWeight[T]) String() string {
 	return h.hs.String()
 }
 
-func (h MinHeapV2[T]) IsEmpty() bool {
+func (h MinHeapWithDecreaseWeight[T]) IsEmpty() bool {
 	return h.hs.IsEmpty()
 }
 
-func (h *MinHeapV2[T]) ExtractMin() (HeapItem[T], error) {
+func (h *MinHeapWithDecreaseWeight[T]) ExtractMin() (HeapItem[T], error) {
 	return h.hs.ExtractMin()
 }
 
-func (h *MinHeapV2[T]) DecreaseWeight(value T, newWeight int) int {
+func (h MinHeapWithDecreaseWeight[T]) DecreaseWeight(value T, newWeight int) int {
 	// DecreaseWeight does nothing if no item with value 'value' is present or the newWeight is larger or equal
 	i, ok := h.indexOf[value]
 	if !ok {
@@ -225,135 +225,5 @@ func (h *MinHeapV2[T]) DecreaseWeight(value T, newWeight int) int {
 	oldWeight := it.Weight
 	h.hs.cnt.SetWeight(i, newWeight)
 	bubbleUp(h.hs.cnt, i)
-	return oldWeight
-}
-
-type MinHeap[T comparable] struct {
-	data []HeapItem[T]
-	// All items in the queue must have distinct values!
-	indexOf map[T]int
-}
-
-func NewMinHeap[T comparable](items []HeapItem[T]) MinHeap[T] {
-	// No copy of items is made!
-	indexOf := make(map[T]int)
-	for i, it := range items {
-		indexOf[it.Value] = i
-	}
-	h := MinHeap[T]{items, indexOf}
-	for i := len(items)/2 - 1; i >= 0; i-- {
-		h.bubbleDown(i)
-	}
-	return h
-}
-
-func (h MinHeap[T]) Length() int {
-	return len(h.data)
-}
-
-func (h MinHeap[T]) IsEmpty() bool {
-	return len(h.data) == 0
-}
-
-func (h *MinHeap[T]) swap(i, j int) {
-	x, y := h.data[i], h.data[j]
-	h.data[i], h.data[j] = y, x
-	h.indexOf[x.Value], h.indexOf[y.Value] = j, i
-}
-
-func (h *MinHeap[T]) bubbleUp(id int) {
-	pid := Parent(id)
-	if pid == -1 {
-		return
-	}
-	p, c := h.data[pid], h.data[id]
-	if p.Weight <= c.Weight {
-		return
-	}
-	h.swap(pid, id)
-	h.bubbleUp(pid)
-}
-
-func (h *MinHeap[T]) Insert(item HeapItem[T]) error {
-	_, valuePresent := h.indexOf[item.Value]
-	if valuePresent {
-		return fmt.Errorf("an item with the same value %v was already inerted into the queue", item.Value)
-	}
-	h.data = append(h.data, item)
-	id := len(h.data) - 1
-	h.indexOf[item.Value] = id
-	h.bubbleUp(id)
-	return nil
-}
-
-func (h MinHeap[T]) Capacity() int {
-	return cap(h.data)
-}
-
-func (h MinHeap[T]) String() string {
-	stringData := make([]string, len(h.data))
-	for i := 0; i < len(h.data); i++ {
-		stringData[i] = fmt.Sprintf("%v", h.data[i])
-	}
-	return fmt.Sprintf("%v", stringData)
-}
-
-func (h *MinHeap[T]) bubbleDown(id int) {
-	min := id
-	cid := FirstChild(id)
-	// Find index of the node of minimal weight in the family of the node at p
-	for i := 0; i < 2; i++ {
-		if (cid + i) >= len(h.data) {
-			break
-		}
-		if h.data[cid+i].Weight < h.data[min].Weight {
-			min = cid + i
-		}
-	}
-	if min == id {
-		return
-	}
-	h.swap(id, min)
-	h.bubbleDown(min)
-}
-
-func (h *MinHeap[T]) decreaseCapacity() {
-	if len(h.data) < cap(h.data)/4 {
-		newData := make([]HeapItem[T], len(h.data), cap(h.data)/2)
-		copy(newData, h.data)
-		h.data = newData
-	}
-}
-
-func (h *MinHeap[T]) ExtractMin() (HeapItem[T], error) {
-	if h.IsEmpty() {
-		return *new(HeapItem[T]), errors.New("cannot extract minimum from an empty heap")
-	}
-	min := h.data[0]
-	delete(h.indexOf, min.Value)
-	last := h.data[len(h.data)-1]
-	h.data[0] = last
-	h.indexOf[last.Value] = 0
-	h.data = h.data[:len(h.data)-1]
-	if len(h.data) > 1 {
-		h.bubbleDown(0)
-	}
-	h.decreaseCapacity()
-	return min, nil
-}
-
-func (h *MinHeap[T]) DecreaseWeight(value T, newWeight int) int {
-	// DecreaseWeight does nothing if no item with value 'value' is present or the newWeight is larger or equal
-	id, ok := h.indexOf[value]
-	if !ok {
-		return -1
-	}
-	item := &h.data[id]
-	if item.Weight <= newWeight {
-		return item.Weight
-	}
-	oldWeight := item.Weight
-	item.Weight = newWeight
-	h.bubbleUp(id)
 	return oldWeight
 }

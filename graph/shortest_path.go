@@ -28,7 +28,7 @@ func ShortestPathDijkstra(g Graph, start int) (ShortestPathResult, error) {
 	for i := range nodes {
 		nodes[i] = queue.HeapItem[int]{Value: i, Weight: MAXINT}
 	}
-	nodesHeap := queue.NewMinHeap[int](nodes)
+	nodesHeap := queue.NewMinHeapWithDecreaseWeight[int](nodes)
 	nodesHeap.DecreaseWeight(start, 0)
 
 	decreaseWeight := func(i int, newWeight int) {

@@ -16,7 +16,7 @@ func main() {
 	items[1] = queue.HeapItem[[]int]{Value: []int{2, 3}, Weight: 4}
 	items[2] = queue.HeapItem[[]int]{Value: []int{2, 3, 42}, Weight: 5}
 	fmt.Println(items)
-	q := queue.NewMinHeapSimple[[]int](items)
+	q := queue.NewMinHeap[[]int](items)
 	fmt.Println(q)
 	q.Insert(queue.HeapItem[[]int]{Value: []int{35, 36}, Weight: 2})
 	fmt.Println(q)
