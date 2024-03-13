@@ -64,7 +64,7 @@ func TravelingSalesman(g Graph) TSPSolution {
 				}
 			}
 			psNew := ps.Extend(edge)
-			q.Insert(queue.HeapItem[TSPSolution]{Value: psNew, Weight: tspCostLowerBound(psNew, min, g)})
+			q.Insert(psNew, tspCostLowerBound(psNew, min, g))
 		}
 	}
 

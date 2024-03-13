@@ -110,8 +110,8 @@ func (h MinHeap[T]) Len() int {
 	return h.cnt.Len()
 }
 
-func (h *MinHeap[T]) Insert(it HeapItem[T]) {
-	h.cnt = h.cnt.Append(it)
+func (h *MinHeap[T]) Insert(val T, w int) {
+	h.cnt = h.cnt.Append(HeapItem[T]{val, w})
 	bubbleUp(h.cnt, h.cnt.Len()-1)
 }
 
@@ -196,8 +196,8 @@ func (h MinHeapWithDecreaseWeight[T]) Len() int {
 	return h.hs.Len()
 }
 
-func (h *MinHeapWithDecreaseWeight[T]) Insert(it HeapItem[T]) {
-	h.hs.Insert(it)
+func (h *MinHeapWithDecreaseWeight[T]) Insert(val T, w int) {
+	h.hs.Insert(val, w)
 }
 
 func (h MinHeapWithDecreaseWeight[T]) String() string {

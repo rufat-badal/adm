@@ -174,7 +174,7 @@ func PrueferFromTree(g Graph) []int {
 		pruefer = append(pruefer, j)
 		g.RemoveEdge(i, j)
 		if g.Degree[j] == 1 {
-			leafsHeap.Insert(queue.HeapItem[int]{Value: j, Weight: j})
+			leafsHeap.Insert(j, j)
 		}
 		nverts--
 	}
