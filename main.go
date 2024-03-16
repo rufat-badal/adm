@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/rufat-badal/adm/graph"
+	"github.com/rufat-badal/adm/cmd/dp"
 )
 
 func main() {
-	const nvertices = 15
-	g := graph.NewRandomGraph(nvertices, 0.5, false, 100)
-	fmt.Println(graph.TravelingSalesman(g))
+	for n := 0; n < 20; n++ {
+		fmt.Println(dp.Fibonacci(n))
+	}
 }
