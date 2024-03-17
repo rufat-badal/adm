@@ -7,7 +7,5 @@ import (
 )
 
 func main() {
-	for n := 0; n < 20; n++ {
-		fmt.Println(dp.Fibonacci(n))
-	}
+	fmt.Println(dp.BinomialCoefficient(20, 10))
 }
