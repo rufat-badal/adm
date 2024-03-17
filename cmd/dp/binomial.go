@@ -1,9 +1,9 @@
 package dp
 
-func BinomialCoefficient(n, k int) int {
-	bc := make([][]int, 2)
-	bc[0] = make([]int, n+1)
-	bc[1] = make([]int, n+1)
+func BinomialCoefficient(n, k int) int64 {
+	bc := make([][]int64, 2)
+	bc[0] = make([]int64, n+1)
+	bc[1] = make([]int64, n+1)
 	bc[0][0] = 1
 	bc[1][0] = 1
 	old := 0

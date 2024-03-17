@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(dp.BinomialCoefficient(20, 10))
+	fmt.Println(dp.BinomialCoefficient(50, 25))
 }
