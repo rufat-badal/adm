@@ -18,7 +18,6 @@
             gopls
             delve
             go-tools
-            rnix-lsp
           ];
         };
       });
