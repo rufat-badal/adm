@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/rufat-badal/adm/cmd/dp"
+	"github.com/rufat-badal/adm/dp"
 )
 
 func main() {
-	fmt.Println(dp.BinomialCoefficient(50, 25))
+	cost, _ := dp.CompareStrings("Rufat", "Ruufat")
+	fmt.Println(cost)
 }
