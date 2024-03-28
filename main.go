@@ -7,6 +7,12 @@ import (
 )
 
 func main() {
-	cost, _ := dp.CompareStrings("Rufat", "Ruufat")
+	first := "Rufxyzatち"
+	second := "Rufat"
+	cost, m := dp.CompareStrings(first, second)
 	fmt.Println(cost)
+	s, e := dp.ReconstructPathCompareStrings(first, second, m)
+	if e == nil {
+		fmt.Println(s)
+	}
 }
