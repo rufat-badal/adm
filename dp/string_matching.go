@@ -11,12 +11,12 @@ const (
 	None
 )
 
-type Cell struct {
+type StringCompareCell struct {
 	Cost   int
 	Parent StringCompareCase
 }
 
-func CompareStrings(first, second string) (int, [][]Cell) {
+func CompareStrings(first, second string) (int, [][]StringCompareCell) {
 	const CostInsert = 1
 	const CostDelete = 1
 	const CostSubstitute = 1
@@ -24,9 +24,9 @@ func CompareStrings(first, second string) (int, [][]Cell) {
 	firstRunes := []rune(first)
 	secondRunes := []rune(second)
 
-	m := make([][]Cell, len(firstRunes)+1)
+	m := make([][]StringCompareCell, len(firstRunes)+1)
 	for i := range m {
-		m[i] = make([]Cell, len(secondRunes)+1)
+		m[i] = make([]StringCompareCell, len(secondRunes)+1)
 	}
 
 	m[0][0].Cost = 0
@@ -72,7 +72,7 @@ func CompareStrings(first, second string) (int, [][]Cell) {
 	return m[len(firstRunes)][len(secondRunes)].Cost, m
 }
 
-func reconstructPathCompareStringsRecursive(first, second []rune, i, j int, m [][]Cell) string {
+func reconstructPathCompareStringsRecursive(first, second []rune, i, j int, m [][]StringCompareCell) string {
 	if m[i][j].Parent == None {
 		return ""
 	}
@@ -95,7 +95,7 @@ func reconstructPathCompareStringsRecursive(first, second []rune, i, j int, m []
 	return reconstructPathCompareStringsRecursive(first, second, i-1, j, m) + partialOut
 }
 
-func ReconstructPathCompareStrings(first, second string, m [][]Cell) (string, error) {
+func ReconstructPathCompareStrings(first, second string, m [][]StringCompareCell) (string, error) {
 	firstRunes := []rune(first)
 	secondRunes := []rune(second)
 	nrows := len(m)
