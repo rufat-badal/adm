@@ -7,12 +7,8 @@ import (
 )
 
 func main() {
-	first := "Rufxyzatち"
-	second := "Rufat"
-	cost, m := dp.CompareStrings(first, second)
-	fmt.Println(cost)
-	s, e := dp.ReconstructPathCompareStrings(first, second, m)
-	if e == nil {
-		fmt.Println(s)
-	}
+	seq := []int{1, 7, 3, 5, 6, 8, 100, 9, 13, 15}
+	l, p := dp.LongestIncreasingSubsequence(seq)
+	fmt.Println(l)
+	fmt.Println(dp.ReconstructLIS(seq, p))
 }
